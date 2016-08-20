@@ -8,7 +8,7 @@
 int _tmain(int argc, _TCHAR* argv[])
 {
 	UI ui;
-	ui.createDisk(1048576, "Disk.af");
+	ui.createDisk(139460608, "Disk.af");
 
 	//char* buffer = new char[20];
 

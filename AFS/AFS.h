@@ -6,13 +6,12 @@ struct SuperBlock
 	int freeBlocks;
 	int usedBlocks;
 	int blockSize;
-	int totalSize;
+	unsigned int totalSize;
 	int totalInodes;
 	int freeInodes;
 	int bitmapBlock;
 	int directoryBlock;
 	int inodeTableBlock;
-	char fileSystemName[16];
 	char partition;
 };
 
@@ -35,9 +34,19 @@ struct Inode
 
 class AFS
 {
-public:
-	AFS();
+private:
+	void initializeSuperBlock(unsigned int partitionSize, char partition);
+	int calculateTotalInodes() const;
+	int calculateInodeTableInitialBlock() const;
+	int calculateDirectoryInitialBlock() const;
 
+public:
+	SuperBlock super;
+	DirectoryEntry entry;
+	Inode inode;
+
+	AFS();
+	void mountFileSystem(std::string diskName, char partition, unsigned int size);
 
 
 	~AFS();

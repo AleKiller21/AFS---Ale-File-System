@@ -1,16 +1,17 @@
 #pragma once
-#include <fstream>
+#include "AFS.h"
 
 class UI
 {
 private:
-	char* setPartition(int size);
+	AFS fileSystem;
 
+	char* setPartition(int size);
 
 public:
 
 	UI();
-	void createDisk(int size, std::string name);
+	void createDisk(unsigned int size, std::string diskName);
 
 	~UI();
 };
