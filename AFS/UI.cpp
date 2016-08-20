@@ -19,10 +19,6 @@ void UI::createDisk(unsigned int size, string diskName)
 
 	delete[] buffer;
 	buffer = nullptr;
-
-	//float x = (double)45876 / 4096;
-
-	//cout << ceil(x) << endl;
 }
 
 char* UI::setPartition(int size)
