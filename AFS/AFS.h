@@ -16,7 +16,7 @@ struct SuperBlock
 	char partition;
 };
 
-struct Directory
+struct DirectoryEntry
 {
 	char name[50];
 	int inode;
