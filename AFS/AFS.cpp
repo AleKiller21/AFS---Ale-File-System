@@ -9,15 +9,22 @@ AFS::AFS()
 
 void AFS::mountFileSystem(string diskName, char partition, unsigned int size)
 {
-	ofstream out(diskName.c_str(), ios::binary);
-	out.seekp(0);
+	disk.open(diskName.c_str(), ios::binary | ios::out | ios::in);
+	disk.seekp(0);
 
 	initializeSuperBlock(size, partition);
 	initializeBitmap();
-	out.write(reinterpret_cast<char*>(&super), sizeof(SuperBlock));
-	out.seekp(super.bitmapBlock * super.blockSize);
-	out.write(reinterpret_cast<char*>(bitmap), super.bitmapSize);
-	out.close();
+	initializeDirectory();
+
+	disk.write(reinterpret_cast<char*>(&super), sizeof(SuperBlock));
+
+	disk.seekp(super.bitmapBlock * super.blockSize);
+	disk.write(reinterpret_cast<char*>(bitmap), super.bitmapSize);
+
+	disk.seekp(super.directoryBlock * super.blockSize);
+	disk.write(reinterpret_cast<char*>(directory), super.directorySize);
+
+	disk.close();
 }
 
 void AFS::initializeSuperBlock(unsigned int partitionSize, char partition)
@@ -33,6 +40,7 @@ void AFS::initializeSuperBlock(unsigned int partitionSize, char partition)
 	super.bitmapBlock = 1;
 	super.bitmapSize = super.totalBlocks / 8;
 	super.wordsInBitmap = super.bitmapSize / sizeof(int);
+	super.directorySize = super.totalInodes * sizeof(DirectoryEntry);
 	super.directoryBlock = calculateDirectoryInitialBlock();
 	super.inodeTableBlock = calculateInodeTableInitialBlock();
 }
@@ -44,6 +52,25 @@ void AFS::initializeBitmap()
 	for (int i = 0; i < super.wordsInBitmap; i++)
 	{
 		bitmap[i] = 0;
+	}
+}
+
+void AFS::initializeDirectory()
+{
+	directory = new DirectoryEntry[super.totalInodes];
+
+	for (int i = 0; i < super.totalInodes; i++)
+	{
+		DirectoryEntry entry;
+		entry.inode = -1;
+		entry.available = true;
+
+		for (int x = 0; x < sizeof(entry.name); x++)
+		{
+			entry.name[x] = '\0';
+		}
+
+		directory[i] = entry;
 	}
 }
 

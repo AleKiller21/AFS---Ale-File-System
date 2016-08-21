@@ -26,7 +26,7 @@ char* UI::setPartition(int size)
 	char* buffer = new char[size];
 	for (int i = 0; i < size; i++)
 	{
-		buffer[i] = 'x';
+		buffer[i] = '\0';
 	}
 
 	return buffer;
