@@ -16,6 +16,7 @@ struct SuperBlock
 	int directoryBlock;
 	int inodeTableBlock;
 	char partition;
+	int inodeTableSize;
 };
 
 struct DirectoryEntry
@@ -41,12 +42,14 @@ private:
 	std::fstream disk;
 	SuperBlock super;
 	DirectoryEntry* directory;
+	Inode* inodes;
 	unsigned int* bitmap;
 
 
 	void initializeSuperBlock(unsigned int partitionSize, char partition);
 	void initializeBitmap();
 	void initializeDirectory();
+	void initializeInodeTable();
 	int calculateInodeTableInitialBlock() const;
 	int calculateDirectoryInitialBlock() const;
 

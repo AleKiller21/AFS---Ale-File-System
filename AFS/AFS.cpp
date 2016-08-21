@@ -15,6 +15,7 @@ void AFS::mountFileSystem(string diskName, char partition, unsigned int size)
 	initializeSuperBlock(size, partition);
 	initializeBitmap();
 	initializeDirectory();
+	initializeInodeTable();
 
 	disk.write(reinterpret_cast<char*>(&super), sizeof(SuperBlock));
 
@@ -23,6 +24,9 @@ void AFS::mountFileSystem(string diskName, char partition, unsigned int size)
 
 	disk.seekp(super.directoryBlock * super.blockSize);
 	disk.write(reinterpret_cast<char*>(directory), super.directorySize);
+
+	disk.seekp(super.inodeTableBlock * super.blockSize);
+	disk.write(reinterpret_cast<char*>(inodes), super.inodeTableSize);
 
 	disk.close();
 }
@@ -41,6 +45,7 @@ void AFS::initializeSuperBlock(unsigned int partitionSize, char partition)
 	super.bitmapSize = super.totalBlocks / 8;
 	super.wordsInBitmap = super.bitmapSize / sizeof(int);
 	super.directorySize = super.totalInodes * sizeof(DirectoryEntry);
+	super.inodeTableSize = super.totalInodes * sizeof(Inode);
 	super.directoryBlock = calculateDirectoryInitialBlock();
 	super.inodeTableBlock = calculateInodeTableInitialBlock();
 }
@@ -71,6 +76,22 @@ void AFS::initializeDirectory()
 		}
 
 		directory[i] = entry;
+	}
+}
+
+void AFS::initializeInodeTable()
+{
+	inodes = new Inode[super.totalInodes];
+
+	for (int i = 0; i < super.totalInodes; i++)
+	{
+		Inode inode;
+		inode.available = true;
+		inode.blockPointer = 0;
+		inode.dataBlocks = 0;
+		inode.size = 0;
+
+		inodes[i] = inode;
 	}
 }
 
