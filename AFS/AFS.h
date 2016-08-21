@@ -33,7 +33,7 @@ struct Inode
 	int dataBlocks;
 	//DateCreated
 	//DateLastModified
-	std::streamsize blockPointer;
+	unsigned int blockPointer;
 };
 
 class AFS
