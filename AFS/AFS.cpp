@@ -7,7 +7,7 @@ AFS::AFS()
 {
 }
 
-void AFS::mountFileSystem(string diskName, char partition, unsigned int size)
+void AFS::mountFileSystem(string diskName, char partition, std::streamsize size)
 {
 	disk.open(diskName.c_str(), ios::binary | ios::out | ios::in);
 	disk.seekp(0);
@@ -31,13 +31,13 @@ void AFS::mountFileSystem(string diskName, char partition, unsigned int size)
 	disk.close();
 }
 
-void AFS::initializeSuperBlock(unsigned int partitionSize, char partition)
+void AFS::initializeSuperBlock(streamsize partitionSize, char partition)
 {
 	super.blockSize = 4096;
 	super.totalBlocks = partitionSize / super.blockSize;
 	super.freeBlocks = super.totalBlocks;
 	super.usedBlocks = 0;
-	super.totalSize = partitionSize;
+	super.partitionSize = partitionSize;
 	super.partition = partition;
 	super.totalInodes = super.blockSize / sizeof(Inode);
 	super.freeInodes = super.totalInodes;

@@ -6,12 +6,12 @@ class UI
 private:
 	AFS fileSystem;
 
-	char* setPartition(int size);
+	char* setPartition(std::streamsize size);
 
 public:
 
 	UI();
-	void createDisk(unsigned int size, std::string diskName);
+	void createDisk(std::streamsize size, std::string diskName);
 
 	~UI();
 };

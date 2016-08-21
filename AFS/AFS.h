@@ -9,7 +9,7 @@ struct SuperBlock
 	int bitmapSize;
 	int directorySize;
 	int wordsInBitmap;
-	unsigned int totalSize;
+	std::streamsize partitionSize;
 	int totalInodes;
 	int freeInodes;
 	int bitmapBlock;
@@ -33,7 +33,7 @@ struct Inode
 	int dataBlocks;
 	//DateCreated
 	//DateLastModified
-	int blockPointer;
+	std::streamsize blockPointer;
 };
 
 class AFS
@@ -46,7 +46,7 @@ private:
 	unsigned int* bitmap;
 
 
-	void initializeSuperBlock(unsigned int partitionSize, char partition);
+	void initializeSuperBlock(std::streamsize partitionSize, char partition);
 	void initializeBitmap();
 	void initializeDirectory();
 	void initializeInodeTable();
@@ -56,7 +56,7 @@ private:
 public:
 
 	AFS();
-	void mountFileSystem(std::string diskName, char partition, unsigned int size);
+	void mountFileSystem(std::string diskName, char partition, std::streamsize size);
 
 
 	~AFS();
