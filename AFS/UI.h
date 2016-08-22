@@ -12,7 +12,7 @@ public:
 
 	UI();
 	void createDisk(std::streamsize size, std::string diskName);
-	bool openDisk(std::string diskName);
+	int openDisk(std::string diskName);
 
 	~UI();
 };

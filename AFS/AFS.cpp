@@ -3,6 +3,7 @@
 
 #define FIRST_BIT_WORD 2147483648
 #define MAX_SIZE_WORD 4294967295
+#define SUCCESS 0
 
 using namespace std;
 
@@ -32,21 +33,19 @@ void AFS::mountNewFileSystem(string diskName, char partition, std::streamsize si
 	disk.write(reinterpret_cast<char*>(inodes), super.inodeTableSize);
 	disk.close();
 
-	//cout << bitmap[0] << endl;
-
 	delete[] directory;
 	delete[] bitmap;
 	delete[] inodes;
 }
 
-bool AFS::openDisk(std::string name)
+int AFS::openDisk(std::string name)
 {
-	if (disk.is_open()) return false;
+	if (disk.is_open()) return DISK_ALREADY_OPEN;
 
 	disk.open(name.c_str(), ios::binary | ios::out | ios::in);
 	loadStructuresToMemory();
 
-	return true;
+	return SUCCESS;
 }
 
 void AFS::loadStructuresToMemory()
