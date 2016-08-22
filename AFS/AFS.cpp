@@ -30,8 +30,61 @@ void AFS::mountNewFileSystem(string diskName, char partition, std::streamsize si
 
 	disk.seekp(super.inodeTableBlock * super.blockSize);
 	disk.write(reinterpret_cast<char*>(inodes), super.inodeTableSize);
-
 	disk.close();
+
+	//cout << bitmap[0] << endl;
+
+	delete[] directory;
+	delete[] bitmap;
+	delete[] inodes;
+}
+
+bool AFS::openDisk(std::string name)
+{
+	if (disk.is_open()) return false;
+
+	disk.open(name.c_str(), ios::binary | ios::out | ios::in);
+	loadStructuresToMemory();
+
+	return true;
+}
+
+void AFS::loadStructuresToMemory()
+{
+	loadSuperBlock();
+	loadBitmap();
+	loadDirectory();
+	loadInodeTable();
+}
+
+void AFS::loadSuperBlock()
+{
+	disk.seekg(0);
+	disk.read(reinterpret_cast<char*>(&super), sizeof(SuperBlock));
+}
+
+void AFS::loadBitmap()
+{
+	bitmap = new unsigned int[super.wordsInBitmap];
+
+	disk.seekg(super.bitmapBlock * super.blockSize);
+	disk.read(reinterpret_cast<char*>(bitmap), super.bitmapSize);
+}
+
+void AFS::loadDirectory()
+{
+	directory = new DirectoryEntry[super.totalInodes];
+
+	disk.seekg(super.directoryBlock * super.blockSize);
+	disk.read(reinterpret_cast<char*>(directory), super.directorySize);
+}
+
+void AFS::loadInodeTable()
+{
+	inodes = new Inode[super.totalInodes];
+
+	disk.seekg(super.inodeTableBlock * super.blockSize);
+	disk.read(reinterpret_cast<char*>(inodes), super.inodeTableSize);
 }
 
 void AFS::initializeSuperBlock(streamsize partitionSize, char partition)

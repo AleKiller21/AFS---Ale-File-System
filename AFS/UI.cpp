@@ -22,6 +22,11 @@ void UI::createDisk(streamsize size, string diskName)
 	fileSystem.mountNewFileSystem(diskName, 'A', size);
 }
 
+bool UI::openDisk(std::string diskName)
+{
+	return fileSystem.openDisk(diskName);
+}
+
 char* UI::setPartition(streamsize size)
 {
 	char* buffer = new char[size];

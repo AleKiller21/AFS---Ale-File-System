@@ -45,8 +45,13 @@ private:
 	DirectoryEntry* directory;
 	Inode* inodes;
 	unsigned int* bitmap;
+	bool structuresInMemory;
 
-
+	void loadStructuresToMemory();
+	void loadSuperBlock();
+	void loadBitmap();
+	void loadDirectory();
+	void loadInodeTable();
 	void initializeSuperBlock(std::streamsize partitionSize, char partition);
 	void initializeBitmap();
 	void initializeDirectory();
@@ -59,6 +64,7 @@ public:
 
 	AFS();
 	void mountNewFileSystem(std::string diskName, char partition, std::streamsize size);
+	bool openDisk(std::string name);
 
 
 	~AFS();
