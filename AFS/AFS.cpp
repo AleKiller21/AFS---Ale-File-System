@@ -4,6 +4,10 @@
 #define FIRST_BIT_WORD 2147483648
 #define MAX_SIZE_WORD 4294967295
 #define SUCCESS 0
+#define DISK_NOT_OPEN  1
+#define DISK_ALREADY_OPEN 2
+#define NOT_ENOUGH_BLOCKS 3
+#define FILE_ALREADY_EXISTS 4
 
 using namespace std;
 
@@ -46,6 +50,21 @@ int AFS::openDisk(std::string name)
 	loadStructuresToMemory();
 
 	return SUCCESS;
+}
+
+int AFS::importFile(std::string filePath, std::string name)
+{
+	if (!disk.is_open()) return DISK_NOT_OPEN;
+
+	ifstream file(filePath.c_str(), ios::binary | ios::ate);
+	streamsize size = file.tellg();
+	if (!checkIfEnoughFreeBlocks(size)) return NOT_ENOUGH_BLOCKS;
+
+	file.seekg(0);
+	cout << file.tellg() << endl;
+	file.close();
+
+	return 0;
 }
 
 void AFS::loadStructuresToMemory()
@@ -180,6 +199,12 @@ int AFS::calculateInodeTableInitialBlock() const
 	int directoryBlocks = ceil((static_cast<double>(super.totalInodes) * sizeof(DirectoryEntry)) / super.blockSize);
 
 	return directoryBlocks + super.directoryBlock;
+}
+
+int AFS::checkIfEnoughFreeBlocks(std::streamsize fileSize)
+{
+	int sizeInBlocks = ceil(static_cast<double>(fileSize) / super.blockSize);
+	return sizeInBlocks < super.freeBlocks;
 }
 
 AFS::~AFS()

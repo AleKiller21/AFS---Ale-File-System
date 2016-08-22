@@ -27,6 +27,11 @@ int UI::openDisk(std::string diskName)
 	return fileSystem.openDisk(diskName);
 }
 
+int UI::importFile(std::string fileName, string name)
+{
+	return fileSystem.importFile(fileName, name);
+}
+
 char* UI::setPartition(streamsize size)
 {
 	char* buffer = new char[size];

@@ -1,13 +1,5 @@
 #pragma once
 
-enum Errors
-{
-	DISK_NOT_OPEN = 1,
-	DISK_ALREADY_OPEN,
-	NOT_ENOUGH_BLOCKS,
-	FILE_ALREADY_EXISTS
-};
-
 struct SuperBlock
 {
 	int totalBlocks;
@@ -67,13 +59,14 @@ private:
 	int calculateInodeTableInitialBlock() const;
 	int calculateDirectoryInitialBlock() const;
 	int calculateInitialDataBlock() const;
+	int checkIfEnoughFreeBlocks(std::streamsize fileSize);
 
 public:
 
 	AFS();
 	void mountNewFileSystem(std::string diskName, char partition, std::streamsize size);
-	
 	int openDisk(std::string name);
+	int importFile(std::string filePath, std::string name);
 
 	~AFS();
 };

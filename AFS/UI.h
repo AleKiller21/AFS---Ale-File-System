@@ -13,6 +13,7 @@ public:
 	UI();
 	void createDisk(std::streamsize size, std::string diskName);
 	int openDisk(std::string diskName);
+	int importFile(std::string fileName, std::string name);
 
 	~UI();
 };
