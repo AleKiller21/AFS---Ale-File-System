@@ -30,7 +30,7 @@ struct DirectoryEntry
 struct Inode
 {
 	bool available;
-	int size;
+	std::streamsize size;
 	int dataBlocks;
 	//DateCreated
 	//DateLastModified
@@ -59,7 +59,9 @@ private:
 	int calculateInodeTableInitialBlock() const;
 	int calculateDirectoryInitialBlock() const;
 	int calculateInitialDataBlock() const;
-	int checkIfEnoughFreeBlocks(std::streamsize fileSize);
+	int checkIfEnoughFreeBlocks(std::streamsize fileSize) const;
+	int* getBlocksForFile(std::streamsize size);
+	int calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord);
 
 public:
 

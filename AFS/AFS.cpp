@@ -60,8 +60,9 @@ int AFS::importFile(std::string filePath, std::string name)
 	streamsize size = file.tellg();
 	if (!checkIfEnoughFreeBlocks(size)) return NOT_ENOUGH_BLOCKS;
 
+	int* fileBlocks = getBlocksForFile(size);
+
 	file.seekg(0);
-	cout << file.tellg() << endl;
 	file.close();
 
 	return 0;
@@ -191,7 +192,7 @@ int AFS::calculateDirectoryInitialBlock() const
 
 int AFS::calculateInitialDataBlock() const
 {
-	return super.inodeTableBlock + static_cast<double>(super.inodeTableSize) / super.blockSize;
+	return super.inodeTableBlock + ceil(static_cast<double>(super.inodeTableSize) / super.blockSize);
 }
 
 int AFS::calculateInodeTableInitialBlock() const
@@ -201,10 +202,47 @@ int AFS::calculateInodeTableInitialBlock() const
 	return directoryBlocks + super.directoryBlock;
 }
 
-int AFS::checkIfEnoughFreeBlocks(std::streamsize fileSize)
+int AFS::checkIfEnoughFreeBlocks(std::streamsize fileSize) const
 {
 	int sizeInBlocks = ceil(static_cast<double>(fileSize) / super.blockSize);
 	return sizeInBlocks < super.freeBlocks;
+}
+
+int* AFS::getBlocksForFile(std::streamsize size)
+{
+	int sizeInBlocks = ceil(static_cast<double>(size) / super.blockSize);
+	int* blocks = new int[sizeInBlocks];
+	int iterator = 0;
+	int wordsOccupied = 0;
+	unsigned int bitResult;
+
+	for (int i = 0; i < super.wordsInBitmap; i++)
+	{
+		if (bitmap[i] == MAX_SIZE_WORD) { wordsOccupied++; continue; };
+
+		for (int position = 0; position < sizeof(int) * 8; position++)
+		{
+			bitResult = (FIRST_BIT_WORD >> position) & bitmap[i];
+			if (bitResult) continue;
+
+			blocks[iterator] = calculateBlockNumberInBitmap(wordsOccupied, position);
+			bitmap[i] ^= (FIRST_BIT_WORD >> position);
+			iterator++;
+			if (iterator == sizeInBlocks) break;
+		}
+
+		if (iterator == sizeInBlocks) break;
+		wordsOccupied++;
+	}
+
+	return blocks;
+}
+
+int AFS::calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord)
+{
+	int bitsPerWord = sizeof(int) * 8;
+
+	return bitsPerWord * wordsOccupied + blockPositionInWord;
 }
 
 AFS::~AFS()
