@@ -1,13 +1,16 @@
 #include "stdafx.h"
 #include "AFS.h"
 
+#define FIRST_BIT_WORD 2147483648
+#define MAX_SIZE_WORD 4294967295
+
 using namespace std;
 
 AFS::AFS()
 {
 }
 
-void AFS::mountFileSystem(string diskName, char partition, std::streamsize size)
+void AFS::mountNewFileSystem(string diskName, char partition, std::streamsize size)
 {
 	disk.open(diskName.c_str(), ios::binary | ios::out | ios::in);
 	disk.seekp(0);
@@ -35,8 +38,6 @@ void AFS::initializeSuperBlock(streamsize partitionSize, char partition)
 {
 	super.blockSize = 4096;
 	super.totalBlocks = partitionSize / super.blockSize;
-	super.freeBlocks = super.totalBlocks;
-	super.usedBlocks = 0;
 	super.partitionSize = partitionSize;
 	super.partition = partition;
 	super.totalInodes = super.blockSize / sizeof(Inode);
@@ -48,15 +49,32 @@ void AFS::initializeSuperBlock(streamsize partitionSize, char partition)
 	super.inodeTableSize = super.totalInodes * sizeof(Inode);
 	super.directoryBlock = calculateDirectoryInitialBlock();
 	super.inodeTableBlock = calculateInodeTableInitialBlock();
+	super.firstDataBlock = calculateInitialDataBlock();
+	super.usedBlocks = super.firstDataBlock;
+	super.freeBlocks = super.totalBlocks - super.usedBlocks;
 }
 
 void AFS::initializeBitmap()
 {
 	bitmap = new unsigned int[super.wordsInBitmap];
+	int blocksUsedCounter = 0;
 
 	for (int i = 0; i < super.wordsInBitmap; i++)
 	{
 		bitmap[i] = 0;
+	}
+
+	for (int i = 0; i < super.wordsInBitmap; i++)
+	{
+		for (int bit = 0; bit < sizeof(int) * 8; bit++)
+		{
+			if (blocksUsedCounter == super.usedBlocks) break;
+
+			bitmap[i] ^= (FIRST_BIT_WORD >> bit);
+			blocksUsedCounter++;
+		}
+
+		if (blocksUsedCounter == super.usedBlocks) break;
 	}
 }
 
@@ -98,6 +116,11 @@ void AFS::initializeInodeTable()
 int AFS::calculateDirectoryInitialBlock() const
 {
 	return ceil(super.bitmapSize / static_cast<double>(super.blockSize) + super.bitmapBlock);
+}
+
+int AFS::calculateInitialDataBlock() const
+{
+	return super.inodeTableBlock + static_cast<double>(super.inodeTableSize) / super.blockSize;
 }
 
 int AFS::calculateInodeTableInitialBlock() const

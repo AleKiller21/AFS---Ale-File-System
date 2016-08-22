@@ -15,6 +15,7 @@ struct SuperBlock
 	int bitmapBlock;
 	int directoryBlock;
 	int inodeTableBlock;
+	int firstDataBlock;
 	char partition;
 	int inodeTableSize;
 };
@@ -52,11 +53,12 @@ private:
 	void initializeInodeTable();
 	int calculateInodeTableInitialBlock() const;
 	int calculateDirectoryInitialBlock() const;
+	int calculateInitialDataBlock() const;
 
 public:
 
 	AFS();
-	void mountFileSystem(std::string diskName, char partition, std::streamsize size);
+	void mountNewFileSystem(std::string diskName, char partition, std::streamsize size);
 
 
 	~AFS();

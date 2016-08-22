@@ -8,6 +8,6 @@
 int _tmain(int argc, _TCHAR* argv[])
 {
 	UI ui;
-	ui.createDisk(1073741824, "Disk.af");
+	ui.createDisk(587202560, "Disk.af");
 }
 

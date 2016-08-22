@@ -19,7 +19,7 @@ void UI::createDisk(streamsize size, string diskName)
 	delete[] buffer;
 	buffer = nullptr;
 
-	fileSystem.mountFileSystem(diskName, 'A', size);
+	fileSystem.mountNewFileSystem(diskName, 'A', size);
 }
 
 char* UI::setPartition(streamsize size)
