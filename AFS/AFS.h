@@ -62,6 +62,7 @@ private:
 	int checkIfEnoughFreeBlocks(std::streamsize fileSize) const;
 	int* getBlocksForFile(std::streamsize size);
 	int calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord);
+	int searchFreeInode(std::streamsize fileSize, int* dataBlocks);
 
 public:
 

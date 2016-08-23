@@ -8,6 +8,7 @@
 #define DISK_ALREADY_OPEN 2
 #define NOT_ENOUGH_BLOCKS 3
 #define FILE_ALREADY_EXISTS 4
+#define NO_FREE_INODE 5
 
 using namespace std;
 
@@ -61,6 +62,7 @@ int AFS::importFile(std::string filePath, std::string name)
 	if (!checkIfEnoughFreeBlocks(size)) return NOT_ENOUGH_BLOCKS;
 
 	int* fileBlocks = getBlocksForFile(size);
+	int inode = searchFreeInode(size, fileBlocks);
 
 	file.seekg(0);
 	file.close();
@@ -243,6 +245,20 @@ int AFS::calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord
 	int bitsPerWord = sizeof(int) * 8;
 
 	return bitsPerWord * wordsOccupied + blockPositionInWord;
+}
+
+int AFS::searchFreeInode(std::streamsize fileSize, int* dataBlocks)
+{
+	for (int i = 0; i < super.totalInodes; i++)
+	{
+		if (!inodes[i].available) continue;
+
+		inodes[i].available = false;
+		inodes[i].blockPointer = dataBlocks[0];
+		inodes[i].dataBlocks = ceil(static_cast<double>(fileSize) / super.blockSize);
+		inodes[i].size = fileSize;
+		return i;
+	}
 }
 
 AFS::~AFS()
