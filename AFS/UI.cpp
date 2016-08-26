@@ -19,7 +19,12 @@ void UI::createDisk(streamsize size, string diskName)
 	delete[] buffer;
 	buffer = nullptr;
 
-	fileSystem.mountNewFileSystem(diskName, 'A', size);
+	//fileSystem.mountNewFileSystem(diskName, 'A', size);
+}
+
+int UI::mountFileSystem(std::string diskName, char partition, std::streamsize size)
+{
+	return fileSystem.mountNewFileSystem(diskName, partition, size);
 }
 
 int UI::openDisk(std::string diskName)

@@ -72,7 +72,8 @@ class AFS
 public:
 
 	AFS();
-	void mountNewFileSystem(std::string diskName, char partition, std::streamsize size);
+	int mountNewFileSystem(std::string diskName, char partition, std::streamsize size);
+	int validateFileSystemMount();
 	int createEmptyFile(std::string name);
 	int openDisk(std::string name);
 	int importFile(std::string filePath, std::string name);

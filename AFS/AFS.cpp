@@ -10,6 +10,9 @@
 #define FILE_ALREADY_EXISTS 4
 #define NO_FREE_INODE 5
 #define NO_FREE_DIRECTORY_ENTRY 6
+#define FILE_SYSTEM_NOT_MOUNTED 7
+#define FILE_SYSTEM_ALREADY_MOUNTED 8
+#define DISK_NOT_EXIST 9
 
 using namespace std;
 
@@ -17,11 +20,23 @@ AFS::AFS()
 {
 }
 
-void AFS::mountNewFileSystem(string diskName, char partition, std::streamsize size)
+int AFS::mountNewFileSystem(string diskName, char partition, std::streamsize size)
 {
-	disk.open(diskName.c_str(), ios::binary | ios::out | ios::in);
-	disk.seekp(0);
+	disk.open(diskName.c_str(), ios::binary | ios::out | ios::in | ios::ate);
+	int diskSize = disk.tellg();
+	if (diskSize <= 0)
+	{
+		disk.close();
+		return DISK_NOT_EXIST;
+	}
 
+	if (validateFileSystemMount() > 0)
+	{
+		disk.close();
+		return FILE_SYSTEM_ALREADY_MOUNTED;
+	}
+
+	disk.seekp(0);
 	initializeSuperBlock(size, partition);
 	initializeBitmap();
 	initializeDirectory();
@@ -44,6 +59,18 @@ void AFS::mountNewFileSystem(string diskName, char partition, std::streamsize si
 	delete[] directory;
 	delete[] bitmap;
 	delete[] inodes;
+
+	return SUCCESS;
+}
+
+int AFS::validateFileSystemMount()
+{
+	int totalBlocks;
+
+	disk.seekg(0);
+	disk.read(reinterpret_cast<char*>(&totalBlocks), sizeof(int));
+
+	return totalBlocks;
 }
 
 int AFS::createEmptyFile(std::string name)
@@ -56,6 +83,11 @@ int AFS::openDisk(std::string name)
 	if (disk.is_open()) return DISK_ALREADY_OPEN;
 
 	disk.open(name.c_str(), ios::binary | ios::out | ios::in);
+	if (validateFileSystemMount() <= 0)
+	{
+		disk.close();
+		return FILE_SYSTEM_NOT_MOUNTED;
+	}
 	loadStructuresToMemory();
 
 	return SUCCESS;
@@ -235,6 +267,7 @@ int AFS::calculateInodeTableInitialBlock() const
 
 int AFS::createNewFile(std::streamsize size, std::string name)
 {
+	if (!disk.is_open()) return DISK_NOT_OPEN;
 	if (!checkIfEnoughFreeBlocks(size)) return NOT_ENOUGH_BLOCKS;
 
 	int* fileBlocks = getBlocksForFile(size);
