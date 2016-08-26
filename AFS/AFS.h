@@ -22,7 +22,7 @@ struct SuperBlock
 
 struct DirectoryEntry
 {
-	char name[50];
+	char name[50];//char name[256]
 	int inode;
 	bool available;
 };
@@ -59,10 +59,12 @@ private:
 	int calculateInodeTableInitialBlock() const;
 	int calculateDirectoryInitialBlock() const;
 	int calculateInitialDataBlock() const;
+	int createNewFile(std::streamsize size, std::string name);
 	int checkIfEnoughFreeBlocks(std::streamsize fileSize) const;
 	int* getBlocksForFile(std::streamsize size);
 	int calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord);
-	int searchFreeInode(std::streamsize fileSize, int* dataBlocks);
+	int assignInodeToFile(std::streamsize fileSize, int* dataBlocks);
+	int saveFileInDirectoryEntry(const char* name, int inode) const;
 
 public:
 

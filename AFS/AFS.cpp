@@ -9,6 +9,7 @@
 #define NOT_ENOUGH_BLOCKS 3
 #define FILE_ALREADY_EXISTS 4
 #define NO_FREE_INODE 5
+#define NO_FREE_DIRECTORY_ENTRY 6
 
 using namespace std;
 
@@ -59,10 +60,7 @@ int AFS::importFile(std::string filePath, std::string name)
 
 	ifstream file(filePath.c_str(), ios::binary | ios::ate);
 	streamsize size = file.tellg();
-	if (!checkIfEnoughFreeBlocks(size)) return NOT_ENOUGH_BLOCKS;
-
-	int* fileBlocks = getBlocksForFile(size);
-	int inode = searchFreeInode(size, fileBlocks);
+	createNewFile(size, name);
 
 	file.seekg(0);
 	file.close();
@@ -204,6 +202,15 @@ int AFS::calculateInodeTableInitialBlock() const
 	return directoryBlocks + super.directoryBlock;
 }
 
+int AFS::createNewFile(std::streamsize size, std::string name)
+{
+	if (!checkIfEnoughFreeBlocks(163840)) return NOT_ENOUGH_BLOCKS;
+
+	int* fileBlocks = getBlocksForFile(163840);
+	int inode = assignInodeToFile(163840, fileBlocks);
+	return saveFileInDirectoryEntry(name.c_str(), inode);
+}
+
 int AFS::checkIfEnoughFreeBlocks(std::streamsize fileSize) const
 {
 	int sizeInBlocks = ceil(static_cast<double>(fileSize) / super.blockSize);
@@ -247,7 +254,7 @@ int AFS::calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord
 	return bitsPerWord * wordsOccupied + blockPositionInWord;
 }
 
-int AFS::searchFreeInode(std::streamsize fileSize, int* dataBlocks)
+int AFS::assignInodeToFile(std::streamsize fileSize, int* dataBlocks)
 {
 	for (int i = 0; i < super.totalInodes; i++)
 	{
@@ -259,6 +266,22 @@ int AFS::searchFreeInode(std::streamsize fileSize, int* dataBlocks)
 		inodes[i].size = fileSize;
 		return i;
 	}
+}
+
+int AFS::saveFileInDirectoryEntry(const char* name, int inode) const
+{
+	for (int i = 0; i < super.totalInodes; i++)
+	{
+		if (!directory[i].available) continue;
+
+		directory[i].available = false;
+		directory[i].inode = inode;
+		strcpy_s(directory[i].name, name);
+
+		return SUCCESS;
+	}
+
+	return NO_FREE_DIRECTORY_ENTRY;
 }
 
 AFS::~AFS()
