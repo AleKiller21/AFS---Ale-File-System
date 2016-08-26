@@ -39,9 +39,16 @@ void AFS::mountNewFileSystem(string diskName, char partition, std::streamsize si
 	disk.write(reinterpret_cast<char*>(inodes), super.inodeTableSize);
 	disk.close();
 
+	cout << sizeof(DirectoryEntry) << endl;
+
 	delete[] directory;
 	delete[] bitmap;
 	delete[] inodes;
+}
+
+int AFS::createEmptyFile(std::string name)
+{
+	return createNewFile(1, name);
 }
 
 int AFS::openDisk(std::string name)
@@ -185,6 +192,30 @@ void AFS::initializeInodeTable()
 	}
 }
 
+void AFS::updateStructuresInDisk()
+{
+	disk.seekp(0);
+
+	disk.write(reinterpret_cast<char*>(&super), sizeof(SuperBlock));
+
+	disk.seekp(super.bitmapBlock * super.blockSize);
+	disk.write(reinterpret_cast<char*>(bitmap), super.bitmapSize);
+
+	disk.seekp(super.directoryBlock * super.blockSize);
+	disk.write(reinterpret_cast<char*>(directory), super.directorySize);
+
+	disk.seekp(super.inodeTableBlock * super.blockSize);
+	disk.write(reinterpret_cast<char*>(inodes), super.inodeTableSize);
+}
+
+void AFS::updateSuperBlock(std::streamsize size)
+{
+	int sizeInBlocks = ceil(static_cast<double>(size) / super.blockSize);
+	super.freeBlocks -= sizeInBlocks;
+	super.usedBlocks += sizeInBlocks;
+	super.freeInodes--;
+}
+
 int AFS::calculateDirectoryInitialBlock() const
 {
 	return ceil(super.bitmapSize / static_cast<double>(super.blockSize) + super.bitmapBlock);
@@ -204,11 +235,22 @@ int AFS::calculateInodeTableInitialBlock() const
 
 int AFS::createNewFile(std::streamsize size, std::string name)
 {
-	if (!checkIfEnoughFreeBlocks(163840)) return NOT_ENOUGH_BLOCKS;
+	if (!checkIfEnoughFreeBlocks(size)) return NOT_ENOUGH_BLOCKS;
 
-	int* fileBlocks = getBlocksForFile(163840);
-	int inode = assignInodeToFile(163840, fileBlocks);
-	return saveFileInDirectoryEntry(name.c_str(), inode);
+	int* fileBlocks = getBlocksForFile(size);
+	int inode = assignInodeToFile(size, fileBlocks);
+	if (inode == -1)
+	{
+		restoreBitmap();
+		return NO_FREE_INODE;
+	}
+
+	saveFileInDirectoryEntry(name.c_str(), inode);
+	updateSuperBlock(size);
+	updateStructuresInDisk();
+
+	delete[] fileBlocks;
+	return SUCCESS;
 }
 
 int AFS::checkIfEnoughFreeBlocks(std::streamsize fileSize) const
@@ -254,7 +296,7 @@ int AFS::calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord
 	return bitsPerWord * wordsOccupied + blockPositionInWord;
 }
 
-int AFS::assignInodeToFile(std::streamsize fileSize, int* dataBlocks)
+int AFS::assignInodeToFile(std::streamsize fileSize, int* dataBlocks) const
 {
 	for (int i = 0; i < super.totalInodes; i++)
 	{
@@ -266,9 +308,11 @@ int AFS::assignInodeToFile(std::streamsize fileSize, int* dataBlocks)
 		inodes[i].size = fileSize;
 		return i;
 	}
+
+	return -1;
 }
 
-int AFS::saveFileInDirectoryEntry(const char* name, int inode) const
+void AFS::saveFileInDirectoryEntry(const char* name, int inode) const
 {
 	for (int i = 0; i < super.totalInodes; i++)
 	{
@@ -277,11 +321,15 @@ int AFS::saveFileInDirectoryEntry(const char* name, int inode) const
 		directory[i].available = false;
 		directory[i].inode = inode;
 		strcpy_s(directory[i].name, name);
-
-		return SUCCESS;
+		break;
 	}
+}
 
-	return NO_FREE_DIRECTORY_ENTRY;
+void AFS::restoreBitmap()
+{
+	delete[] bitmap;
+	bitmap = nullptr;
+	loadBitmap();
 }
 
 AFS::~AFS()

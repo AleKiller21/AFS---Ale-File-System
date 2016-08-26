@@ -22,7 +22,7 @@ struct SuperBlock
 
 struct DirectoryEntry
 {
-	char name[50];//char name[256]
+	char name[256];
 	int inode;
 	bool available;
 };
@@ -39,7 +39,7 @@ struct Inode
 
 class AFS
 {
-private:
+
 	std::fstream disk;
 	SuperBlock super;
 	DirectoryEntry* directory;
@@ -56,6 +56,8 @@ private:
 	void initializeBitmap();
 	void initializeDirectory();
 	void initializeInodeTable();
+	void updateStructuresInDisk();
+	void updateSuperBlock(std::streamsize size);
 	int calculateInodeTableInitialBlock() const;
 	int calculateDirectoryInitialBlock() const;
 	int calculateInitialDataBlock() const;
@@ -63,13 +65,15 @@ private:
 	int checkIfEnoughFreeBlocks(std::streamsize fileSize) const;
 	int* getBlocksForFile(std::streamsize size);
 	int calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord);
-	int assignInodeToFile(std::streamsize fileSize, int* dataBlocks);
-	int saveFileInDirectoryEntry(const char* name, int inode) const;
+	int assignInodeToFile(std::streamsize fileSize, int* dataBlocks) const;
+	void saveFileInDirectoryEntry(const char* name, int inode) const;
+	void restoreBitmap();
 
 public:
 
 	AFS();
 	void mountNewFileSystem(std::string diskName, char partition, std::streamsize size);
+	int createEmptyFile(std::string name);
 	int openDisk(std::string name);
 	int importFile(std::string filePath, std::string name);
 

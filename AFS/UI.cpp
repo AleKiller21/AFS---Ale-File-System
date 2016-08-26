@@ -29,7 +29,12 @@ int UI::openDisk(std::string diskName)
 
 int UI::importFile(std::string fileName, string name)
 {
-	return fileSystem.importFile(fileName, name);
+	return fileSystem.importFile(fileName, name); 
+}
+
+int UI::createEmptyFile(std::string fileName)
+{
+	return fileSystem.createEmptyFile(fileName);
 }
 
 char* UI::setPartition(streamsize size)
