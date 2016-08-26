@@ -14,7 +14,16 @@ void CommandLineInterface::createDisk(streamsize size, string diskName)
 
 void CommandLineInterface::loopMenu()
 {
+	string command = "";
+	list<string>* words;
 
+	while (command.compare("exit"))
+	{
+		cout << ">\n";
+		getline(cin, command);
+		words = Parser::parseCommand(command);
+		evaluateCommands(words);
+	}
 }
 
 int CommandLineInterface::mountFileSystem(string diskName, char partition)
@@ -30,6 +39,16 @@ int CommandLineInterface::openDisk(string diskName)
 int CommandLineInterface::createEmptyFile(string fileName)
 {
 	return ui.createEmptyFile(fileName);
+}
+
+void CommandLineInterface::evaluateCommands(list<string>* sentence)
+{
+	string command = sentence->front();
+
+	if (!command.compare("crtdsk"))
+	{
+		
+	}
 }
 
 CommandLineInterface::~CommandLineInterface()

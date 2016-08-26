@@ -1,5 +1,6 @@
 #pragma once
 #include "UI.h"
+#include "Parser.h"
 #include <string>
 
 using namespace std;
@@ -8,6 +9,8 @@ class CommandLineInterface
 {
 	UI ui;
 	streamsize size;
+
+	void evaluateCommands(list<string>* sentence);
 
 public:
 
