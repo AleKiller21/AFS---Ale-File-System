@@ -2,6 +2,7 @@
 #include "UI.h"
 #include "Parser.h"
 #include "CommandValidations.h"
+#include "ErrorHandler.h"
 #include <string>
 
 using namespace std;

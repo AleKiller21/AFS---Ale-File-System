@@ -23,14 +23,16 @@ void CommandLineInterface::loopMenu()
 {
 	string command = "";
 	list<string>* words;
+	int error;
 
 	while (command.compare("exit"))
 	{
 		words = nullptr;
-		cout << "\n>";
+		cout << "\nAleShell>";
 		getline(cin, command);
 		words = Parser::parseCommand(command);
-		evaluateCommands(words);
+		error = evaluateCommands(words);
+		cout << ErrorHandler::handleError(error) << endl;
 		words->clear();
 		delete words;
 	}
@@ -70,7 +72,6 @@ int CommandLineInterface::listFiles()
 		cout << "\n";
 	}
 
-	cout << "\n";
 	files->clear();
 	delete files;
 	return 0;
@@ -79,11 +80,16 @@ int CommandLineInterface::listFiles()
 int CommandLineInterface::evaluateCommands(list<string>* sentence)
 {
 	string command = sentence->front();
+	int error;
+
+	if (!command.compare("exit"))
+		return 0;
 
 	if (!command.compare("crtdsk"))
 	{
-		//CommandValidations::validateCreateDiskCommand();
 		sentence->erase(sentence->begin());
+		error = CommandValidations::validateCreateDiskCommand(sentence);
+		if (error != 0) return error;
 		createDisk(sentence);
 		return 0;
 	}
@@ -97,8 +103,9 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 
 	if (!command.compare("open"))
 	{
-		//CommandValidations::
 		sentence->erase(sentence->begin());
+		error = CommandValidations::validateOpenDiskCommand(sentence);
+		if (error != 0) return error;
 		return openDisk(sentence->front());
 	}
 
@@ -115,7 +122,7 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 		return listFiles();
 	}
 
-	return -1;
+	return 200;
 }
 
 CommandLineInterface::~CommandLineInterface()
