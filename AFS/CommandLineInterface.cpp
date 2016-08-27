@@ -6,10 +6,11 @@ CommandLineInterface::CommandLineInterface()
 {
 }
 
-void CommandLineInterface::createDisk(streamsize size, string diskName)
+void CommandLineInterface::createDisk(list<string>* arguments)
 {
-	ui.createDisk(size, diskName);
-	this->size = size;
+	list<string>::iterator it = arguments->begin();
+	string diskName = *it;
+	//ui.createDisk(size, diskName);
 }
 
 void CommandLineInterface::loopMenu()
@@ -47,7 +48,9 @@ void CommandLineInterface::evaluateCommands(list<string>* sentence)
 
 	if (!command.compare("crtdsk"))
 	{
-		
+		//CommandValidations::validateCreateDiskCommand();
+		sentence->erase(sentence->begin());
+		createDisk(sentence);
 	}
 }
 

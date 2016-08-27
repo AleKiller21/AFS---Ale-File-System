@@ -1,6 +1,7 @@
 #pragma once
 #include "UI.h"
 #include "Parser.h"
+#include "CommandValidations.h"
 #include <string>
 
 using namespace std;
@@ -16,7 +17,7 @@ public:
 
 
 	CommandLineInterface();
-	void createDisk(streamsize size, string diskName);
+	void createDisk(list<string>* arguments);
 	void loopMenu();
 	int mountFileSystem(string diskName, char partition);
 	int openDisk(string diskName);
