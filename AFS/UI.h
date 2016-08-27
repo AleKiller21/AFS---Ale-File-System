@@ -12,7 +12,7 @@ public:
 
 	UI();
 	void createDisk(unsigned int size, std::string diskName);
-	int mountFileSystem(std::string diskName, char partition, unsigned int size);
+	int mountFileSystem(std::string diskName);
 	int openDisk(std::string diskName);
 	int importFile(std::string fileName, std::string name);
 	int createEmptyFile(std::string fileName);

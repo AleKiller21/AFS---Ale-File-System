@@ -16,7 +16,6 @@ struct SuperBlock
 	int directoryBlock;
 	int inodeTableBlock;
 	int firstDataBlock;
-	char partition;
 	int inodeTableSize;
 };
 
@@ -52,7 +51,7 @@ class AFS
 	void loadBitmap();
 	void loadDirectory();
 	void loadInodeTable();
-	void initializeSuperBlock(unsigned int partitionSize, char partition);
+	void initializeSuperBlock(unsigned int partitionSize);
 	void initializeBitmap();
 	void initializeDirectory();
 	void initializeInodeTable();
@@ -72,7 +71,7 @@ class AFS
 public:
 
 	AFS();
-	int mountNewFileSystem(std::string diskName, char partition, unsigned int size);
+	int mountNewFileSystem(std::string diskName);
 	int validateFileSystemMount();
 	int createEmptyFile(std::string name);
 	int openDisk(std::string name);

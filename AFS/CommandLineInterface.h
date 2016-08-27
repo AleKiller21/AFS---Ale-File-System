@@ -11,7 +11,7 @@ class CommandLineInterface
 	UI ui;
 	unsigned int size;
 
-	void evaluateCommands(list<string>* sentence);
+	int evaluateCommands(list<string>* sentence);
 
 public:
 
@@ -19,7 +19,7 @@ public:
 	CommandLineInterface();
 	void createDisk(list<string>* arguments);
 	void loopMenu();
-	int mountFileSystem(string diskName, char partition);
+	int mountFileSystem(list<string>* arguments);
 	int openDisk(string diskName);
 	int createEmptyFile(string fileName);
 

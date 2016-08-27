@@ -26,16 +26,24 @@ void CommandLineInterface::loopMenu()
 
 	while (command.compare("exit"))
 	{
-		cout << ">";
+		words = nullptr;
+		cout << "\n>";
 		getline(cin, command);
 		words = Parser::parseCommand(command);
 		evaluateCommands(words);
+		words->clear();
+		delete words;
 	}
 }
 
-int CommandLineInterface::mountFileSystem(string diskName, char partition)
+int CommandLineInterface::mountFileSystem(list<string>* arguments)
 {
-	return ui.mountFileSystem(diskName, partition, size);
+	list<string>::iterator it = arguments->begin();
+	string diskName = *it;
+	string fileSystem = *(++it);
+	if (fileSystem.compare("afs")) return -1;
+
+	return ui.mountFileSystem(diskName);
 }
 
 int CommandLineInterface::openDisk(string diskName)
@@ -48,7 +56,7 @@ int CommandLineInterface::createEmptyFile(string fileName)
 	return ui.createEmptyFile(fileName);
 }
 
-void CommandLineInterface::evaluateCommands(list<string>* sentence)
+int CommandLineInterface::evaluateCommands(list<string>* sentence)
 {
 	string command = sentence->front();
 
@@ -57,7 +65,19 @@ void CommandLineInterface::evaluateCommands(list<string>* sentence)
 		//CommandValidations::validateCreateDiskCommand();
 		sentence->erase(sentence->begin());
 		createDisk(sentence);
+		return 0;
 	}
+
+	if (!command.compare("mount"))
+	{
+		//CommandValidations::
+		sentence->erase(sentence->begin());
+		return mountFileSystem(sentence);
+	}
+
+	
+
+	return -1;
 }
 
 CommandLineInterface::~CommandLineInterface()

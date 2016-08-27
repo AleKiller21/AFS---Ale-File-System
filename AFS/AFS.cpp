@@ -20,10 +20,11 @@ AFS::AFS()
 {
 }
 
-int AFS::mountNewFileSystem(string diskName, char partition, unsigned int size)
+int AFS::mountNewFileSystem(string diskName)
 {
 	disk.open(diskName.c_str(), ios::binary | ios::out | ios::in | ios::ate);
-	int diskSize = disk.tellg();
+	unsigned int diskSize = disk.tellg();
+
 	if (diskSize <= 0)
 	{
 		disk.close();
@@ -37,7 +38,7 @@ int AFS::mountNewFileSystem(string diskName, char partition, unsigned int size)
 	}
 
 	disk.seekp(0);
-	initializeSuperBlock(size, partition);
+	initializeSuperBlock(diskSize);
 	initializeBitmap();
 	initializeDirectory();
 	initializeInodeTable();
@@ -145,12 +146,11 @@ void AFS::loadInodeTable()
 	disk.read(reinterpret_cast<char*>(inodes), super.inodeTableSize);
 }
 
-void AFS::initializeSuperBlock(unsigned int partitionSize, char partition)
+void AFS::initializeSuperBlock(unsigned int partitionSize)
 {
 	super.blockSize = 4096;
 	super.totalBlocks = partitionSize / super.blockSize;
 	super.partitionSize = partitionSize;
-	super.partition = partition;
 	super.totalInodes = super.blockSize / sizeof(Inode);
 	super.freeInodes = super.totalInodes;
 	super.bitmapBlock = 1;

@@ -22,9 +22,9 @@ void UI::createDisk(unsigned int size, string diskName)
 	//fileSystem.mountNewFileSystem(diskName, 'A', size);
 }
 
-int UI::mountFileSystem(std::string diskName, char partition, unsigned int size)
+int UI::mountFileSystem(std::string diskName)
 {
-	return fileSystem.mountNewFileSystem(diskName, partition, size);
+	return fileSystem.mountNewFileSystem(diskName);
 }
 
 int UI::openDisk(std::string diskName)
