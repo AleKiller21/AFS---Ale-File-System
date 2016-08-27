@@ -20,7 +20,7 @@ AFS::AFS()
 {
 }
 
-int AFS::mountNewFileSystem(string diskName, char partition, std::streamsize size)
+int AFS::mountNewFileSystem(string diskName, char partition, unsigned int size)
 {
 	disk.open(diskName.c_str(), ios::binary | ios::out | ios::in | ios::ate);
 	int diskSize = disk.tellg();
@@ -98,7 +98,7 @@ int AFS::importFile(std::string filePath, std::string name)
 	if (!disk.is_open()) return DISK_NOT_OPEN;
 
 	ifstream file(filePath.c_str(), ios::binary | ios::ate);
-	streamsize size = file.tellg();
+	unsigned int size = file.tellg();
 	createNewFile(size, name);
 
 	file.seekg(0);
@@ -145,7 +145,7 @@ void AFS::loadInodeTable()
 	disk.read(reinterpret_cast<char*>(inodes), super.inodeTableSize);
 }
 
-void AFS::initializeSuperBlock(streamsize partitionSize, char partition)
+void AFS::initializeSuperBlock(unsigned int partitionSize, char partition)
 {
 	super.blockSize = 4096;
 	super.totalBlocks = partitionSize / super.blockSize;
@@ -240,7 +240,7 @@ void AFS::updateStructuresInDisk()
 	disk.write(reinterpret_cast<char*>(inodes), super.inodeTableSize);
 }
 
-void AFS::updateSuperBlock(std::streamsize size)
+void AFS::updateSuperBlock(unsigned int size)
 {
 	int sizeInBlocks = ceil(static_cast<double>(size) / super.blockSize);
 	super.freeBlocks -= sizeInBlocks;
@@ -265,7 +265,7 @@ int AFS::calculateInodeTableInitialBlock() const
 	return directoryBlocks + super.directoryBlock;
 }
 
-int AFS::createNewFile(std::streamsize size, std::string name)
+int AFS::createNewFile(unsigned int size, std::string name)
 {
 	if (!disk.is_open()) return DISK_NOT_OPEN;
 	if (!checkIfEnoughFreeBlocks(size)) return NOT_ENOUGH_BLOCKS;
@@ -286,13 +286,13 @@ int AFS::createNewFile(std::streamsize size, std::string name)
 	return SUCCESS;
 }
 
-int AFS::checkIfEnoughFreeBlocks(std::streamsize fileSize) const
+int AFS::checkIfEnoughFreeBlocks(unsigned int fileSize) const
 {
 	int sizeInBlocks = ceil(static_cast<double>(fileSize) / super.blockSize);
 	return sizeInBlocks < super.freeBlocks;
 }
 
-int* AFS::getBlocksForFile(std::streamsize size)
+int* AFS::getBlocksForFile(unsigned int size)
 {
 	int sizeInBlocks = ceil(static_cast<double>(size) / super.blockSize);
 	int* blocks = new int[sizeInBlocks];
@@ -329,7 +329,7 @@ int AFS::calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord
 	return bitsPerWord * wordsOccupied + blockPositionInWord;
 }
 
-int AFS::assignInodeToFile(std::streamsize fileSize, int* dataBlocks) const
+int AFS::assignInodeToFile(unsigned int fileSize, int* dataBlocks) const
 {
 	for (int i = 0; i < super.totalInodes; i++)
 	{

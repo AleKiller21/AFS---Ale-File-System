@@ -7,7 +7,7 @@ UI::UI()
 {
 }
 
-void UI::createDisk(streamsize size, string diskName)
+void UI::createDisk(unsigned int size, string diskName)
 {
 	char* buffer;
 	ofstream out(diskName.c_str(), ios::binary);
@@ -22,7 +22,7 @@ void UI::createDisk(streamsize size, string diskName)
 	//fileSystem.mountNewFileSystem(diskName, 'A', size);
 }
 
-int UI::mountFileSystem(std::string diskName, char partition, std::streamsize size)
+int UI::mountFileSystem(std::string diskName, char partition, unsigned int size)
 {
 	return fileSystem.mountNewFileSystem(diskName, partition, size);
 }
@@ -42,10 +42,10 @@ int UI::createEmptyFile(std::string fileName)
 	return fileSystem.createEmptyFile(fileName);
 }
 
-char* UI::setPartition(streamsize size)
+char* UI::setPartition(unsigned int size)
 {
 	char* buffer = new char[size];
-	for (streamsize i = 0; i < size; i++)
+	for (unsigned int i = 0; i < size; i++)
 	{
 		buffer[i] = '\0';
 	}

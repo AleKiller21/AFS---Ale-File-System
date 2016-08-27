@@ -6,13 +6,13 @@ class UI
 private:
 	AFS fileSystem;
 
-	char* setPartition(std::streamsize size);
+	char* setPartition(unsigned int size);
 
 public:
 
 	UI();
-	void createDisk(std::streamsize size, std::string diskName);
-	int mountFileSystem(std::string diskName, char partition, std::streamsize size);
+	void createDisk(unsigned int size, std::string diskName);
+	int mountFileSystem(std::string diskName, char partition, unsigned int size);
 	int openDisk(std::string diskName);
 	int importFile(std::string fileName, std::string name);
 	int createEmptyFile(std::string fileName);

@@ -9,7 +9,7 @@ using namespace std;
 class CommandLineInterface
 {
 	UI ui;
-	streamsize size;
+	unsigned int size;
 
 	void evaluateCommands(list<string>* sentence);
 

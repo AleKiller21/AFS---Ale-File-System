@@ -9,7 +9,7 @@ struct SuperBlock
 	int bitmapSize;
 	int directorySize;
 	int wordsInBitmap;
-	std::streamsize partitionSize;
+	unsigned int partitionSize;
 	int totalInodes;
 	int freeInodes;
 	int bitmapBlock;
@@ -30,7 +30,7 @@ struct DirectoryEntry
 struct Inode
 {
 	bool available;
-	std::streamsize size;
+	unsigned int size;
 	int dataBlocks;
 	//DateCreated
 	//DateLastModified
@@ -52,27 +52,27 @@ class AFS
 	void loadBitmap();
 	void loadDirectory();
 	void loadInodeTable();
-	void initializeSuperBlock(std::streamsize partitionSize, char partition);
+	void initializeSuperBlock(unsigned int partitionSize, char partition);
 	void initializeBitmap();
 	void initializeDirectory();
 	void initializeInodeTable();
 	void updateStructuresInDisk();
-	void updateSuperBlock(std::streamsize size);
+	void updateSuperBlock(unsigned int size);
 	int calculateInodeTableInitialBlock() const;
 	int calculateDirectoryInitialBlock() const;
 	int calculateInitialDataBlock() const;
-	int createNewFile(std::streamsize size, std::string name);
-	int checkIfEnoughFreeBlocks(std::streamsize fileSize) const;
-	int* getBlocksForFile(std::streamsize size);
+	int createNewFile(unsigned int size, std::string name);
+	int checkIfEnoughFreeBlocks(unsigned int fileSize) const;
+	int* getBlocksForFile(unsigned int size);
 	int calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord);
-	int assignInodeToFile(std::streamsize fileSize, int* dataBlocks) const;
+	int assignInodeToFile(unsigned int fileSize, int* dataBlocks) const;
 	void saveFileInDirectoryEntry(const char* name, int inode) const;
 	void restoreBitmap();
 
 public:
 
 	AFS();
-	int mountNewFileSystem(std::string diskName, char partition, std::streamsize size);
+	int mountNewFileSystem(std::string diskName, char partition, unsigned int size);
 	int validateFileSystemMount();
 	int createEmptyFile(std::string name);
 	int openDisk(std::string name);
