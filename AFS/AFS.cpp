@@ -18,24 +18,15 @@ using namespace std;
 
 AFS::AFS()
 {
+	directory = nullptr;
+	bitmap = nullptr;
+	inodes = nullptr;
 }
 
-int AFS::mountNewFileSystem(string diskName)
+int AFS::writeFileSystemStructuresToDisk(string diskName)
 {
 	disk.open(diskName.c_str(), ios::binary | ios::out | ios::in | ios::ate);
 	unsigned int diskSize = disk.tellg();
-
-	if (diskSize <= 0)
-	{
-		disk.close();
-		return DISK_NOT_EXIST;
-	}
-
-	if (validateFileSystemMount() > 0)
-	{
-		disk.close();
-		return FILE_SYSTEM_ALREADY_MOUNTED;
-	}
 
 	disk.seekp(0);
 	initializeSuperBlock(diskSize);
@@ -61,42 +52,51 @@ int AFS::mountNewFileSystem(string diskName)
 	delete[] bitmap;
 	delete[] inodes;
 
+	directory = nullptr;
+	bitmap = nullptr;
+	inodes = nullptr;
+
 	return SUCCESS;
 }
 
-int AFS::validateFileSystemMount()
-{
-	int totalBlocks;
-
-	disk.seekg(0);
-	disk.read(reinterpret_cast<char*>(&totalBlocks), sizeof(int));
-
-	return totalBlocks;
-}
+//int AFS::validateFileSystemMount()
+//{
+//	int totalBlocks;
+//
+//	disk.seekg(0);
+//	disk.read(reinterpret_cast<char*>(&totalBlocks), sizeof(int));
+//
+//	return totalBlocks;
+//}
 
 int AFS::createEmptyFile(std::string name)
 {
 	return createNewFile(1, name);
 }
 
-int AFS::openDisk(std::string name)
+int AFS::openDisk(string name)
 {
 	if (disk.is_open()) return DISK_ALREADY_OPEN;
 
 	disk.open(name.c_str(), ios::binary | ios::out | ios::in);
-	if (validateFileSystemMount() <= 0)
-	{
-		disk.close();
-		return FILE_SYSTEM_NOT_MOUNTED;
-	}
-	loadStructuresToMemory();
+	if (!disk) return DISK_NOT_EXIST;
 
 	return SUCCESS;
 }
 
-int AFS::importFile(std::string filePath, std::string name)
+int AFS::closeDisk()
 {
 	if (!disk.is_open()) return DISK_NOT_OPEN;
+
+	if (isFileSystemMounted()) unmountFileSystem();
+
+	disk.close();
+	return SUCCESS;
+}
+
+int AFS::importFile(string filePath, string name)
+{
+	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
 
 	ifstream file(filePath.c_str(), ios::binary | ios::ate);
 	unsigned int size = file.tellg();
@@ -108,8 +108,35 @@ int AFS::importFile(std::string filePath, std::string name)
 	return 0;
 }
 
-list<FileInfo>* AFS::listFiles()
+list<unsigned int>* AFS::getFileSystemInfo() const
 {
+	if (!isFileSystemMounted()) return nullptr;
+
+	list<unsigned int>* info = new list<unsigned int>();
+
+	info->push_back(super.partitionSize);
+	info->push_back(super.totalBlocks);
+	info->push_back(super.freeBlocks);
+	info->push_back(super.usedBlocks);
+	info->push_back(super.blockSize);
+	info->push_back(super.bitmapSize);
+	info->push_back(super.bitmapBlock);
+	info->push_back(super.wordsInBitmap);
+	info->push_back(super.directorySize);
+	info->push_back(super.directoryBlock);
+	info->push_back(super.totalInodes);
+	info->push_back(super.freeInodes);
+	info->push_back(super.inodeTableSize);
+	info->push_back(super.inodeTableBlock);
+	info->push_back(super.firstDataBlock);
+
+	return info;
+}
+
+list<FileInfo>* AFS::listFiles() const
+{
+	if (!isFileSystemMounted()) return nullptr;
+
 	list<FileInfo>* files = new list<FileInfo>();
 
 	for (int i = 0; i < super.totalInodes; i++)
@@ -127,12 +154,32 @@ list<FileInfo>* AFS::listFiles()
 	return files;
 }
 
-void AFS::loadStructuresToMemory()
+int AFS::mountFileSystem()
 {
+	if (!disk.is_open()) return DISK_NOT_OPEN;
+	if (isFileSystemMounted()) return FILE_SYSTEM_ALREADY_MOUNTED;
+
 	loadSuperBlock();
 	loadBitmap();
 	loadDirectory();
 	loadInodeTable();
+
+	return SUCCESS;
+}
+
+int AFS::unmountFileSystem()
+{
+	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
+
+	delete[] bitmap;
+	delete[] directory;
+	delete[] inodes;
+
+	bitmap = nullptr;
+	directory = nullptr;
+	inodes = nullptr;
+
+	return SUCCESS;
 }
 
 void AFS::loadSuperBlock()
@@ -286,8 +333,9 @@ int AFS::calculateInodeTableInitialBlock() const
 
 int AFS::createNewFile(unsigned int size, std::string name)
 {
-	if (!disk.is_open()) return DISK_NOT_OPEN;
+	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
 	if (!checkIfEnoughFreeBlocks(size)) return NOT_ENOUGH_BLOCKS;
+	if (checkFileExist(name)) return FILE_ALREADY_EXISTS;
 
 	int* fileBlocks = getBlocksForFile(size);
 	int inode = assignInodeToFile(size, fileBlocks);
@@ -382,6 +430,23 @@ void AFS::restoreBitmap()
 	delete[] bitmap;
 	bitmap = nullptr;
 	loadBitmap();
+}
+
+bool AFS::isFileSystemMounted() const
+{
+	return directory && bitmap && inodes;
+}
+
+bool AFS::checkFileExist(std::string name) const
+{
+	for (int i = 0; i < super.totalInodes; i++)
+	{
+		if (directory[i].available) continue;
+
+		if (!name.compare(directory[i].name)) return true;
+	}
+
+	return false;
 }
 
 AFS::~AFS()

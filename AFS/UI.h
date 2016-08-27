@@ -6,17 +6,20 @@ class UI
 private:
 	AFS fileSystem;
 
-	char* setPartition(unsigned int size);
+	char* setPartition(unsigned int size) const;
 
 public:
 
 	UI();
-	void createDisk(unsigned int size, std::string diskName);
-	int mountFileSystem(std::string diskName);
+	int createDisk(unsigned int size, std::string diskName);
+	int mountFileSystem();
+	int unmountFileSystem();
 	int openDisk(std::string diskName);
+	int closeDisk();
 	int importFile(std::string fileName, std::string name);
 	int createEmptyFile(std::string fileName);
-	std::list<FileInfo>* listFiles();
+	std::list<FileInfo>* listFiles() const;
+	std::list<unsigned int>* getFileSystemInfo() const;
 
 	~UI();
 };

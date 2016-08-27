@@ -52,9 +52,7 @@ class AFS
 	DirectoryEntry* directory;
 	Inode* inodes;
 	unsigned int* bitmap;
-	bool structuresInMemory;
 
-	void loadStructuresToMemory();
 	void loadSuperBlock();
 	void loadBitmap();
 	void loadDirectory();
@@ -75,16 +73,22 @@ class AFS
 	int assignInodeToFile(unsigned int fileSize, int* dataBlocks) const;
 	void saveFileInDirectoryEntry(const char* name, int inode) const;
 	void restoreBitmap();
+	bool isFileSystemMounted() const;
+	bool checkFileExist(std::string name) const;
 
 public:
 
 	AFS();
-	int mountNewFileSystem(std::string diskName);
-	int validateFileSystemMount();
+	int writeFileSystemStructuresToDisk(std::string diskName);
+	int mountFileSystem();
+	int unmountFileSystem();
+	//int validateFileSystemMount();
 	int createEmptyFile(std::string name);
 	int openDisk(std::string name);
+	int closeDisk();
 	int importFile(std::string filePath, std::string name);
-	std::list<FileInfo>* listFiles();
+	std::list<unsigned int>* getFileSystemInfo() const;
+	std::list<FileInfo>* listFiles() const;
 
 	~AFS();
 };

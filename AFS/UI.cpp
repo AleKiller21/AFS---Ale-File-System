@@ -7,8 +7,15 @@ UI::UI()
 {
 }
 
-void UI::createDisk(unsigned int size, string diskName)
+int UI::createDisk(unsigned int size, string diskName)
 {
+	ifstream disk(diskName.c_str());
+	if (disk)
+	{
+		disk.close();
+		return 10;
+	}
+
 	char* buffer;
 	ofstream out(diskName.c_str(), ios::binary);
 
@@ -19,17 +26,27 @@ void UI::createDisk(unsigned int size, string diskName)
 	delete[] buffer;
 	buffer = nullptr;
 
-	//fileSystem.mountNewFileSystem(diskName, 'A', size);
+	return fileSystem.writeFileSystemStructuresToDisk(diskName);
 }
 
-int UI::mountFileSystem(std::string diskName)
+int UI::mountFileSystem()
 {
-	return fileSystem.mountNewFileSystem(diskName);
+	return fileSystem.mountFileSystem();
+}
+
+int UI::unmountFileSystem()
+{
+	return fileSystem.unmountFileSystem();
 }
 
 int UI::openDisk(std::string diskName)
 {
 	return fileSystem.openDisk(diskName);
+}
+
+int UI::closeDisk()
+{
+	return fileSystem.closeDisk();
 }
 
 int UI::importFile(std::string fileName, string name)
@@ -42,12 +59,17 @@ int UI::createEmptyFile(std::string fileName)
 	return fileSystem.createEmptyFile(fileName);
 }
 
-std::list<FileInfo>* UI::listFiles()
+std::list<FileInfo>* UI::listFiles() const
 {
 	return fileSystem.listFiles();
 }
 
-char* UI::setPartition(unsigned int size)
+std::list<unsigned>* UI::getFileSystemInfo() const
+{
+	return fileSystem.getFileSystemInfo();
+}
+
+char* UI::setPartition(unsigned int size) const
 {
 	char* buffer = new char[size];
 	for (unsigned int i = 0; i < size; i++)
