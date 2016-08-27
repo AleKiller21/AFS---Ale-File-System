@@ -75,7 +75,19 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 		return mountFileSystem(sentence);
 	}
 
-	
+	if (!command.compare("open"))
+	{
+		//CommandValidations::
+		sentence->erase(sentence->begin());
+		return openDisk(sentence->front());
+	}
+
+	if (!command.compare("touch"))
+	{
+		//CommandValidations::
+		sentence->erase(sentence->begin());
+		return createEmptyFile(sentence->front());
+	}
 
 	return -1;
 }
