@@ -10,7 +10,13 @@ void CommandLineInterface::createDisk(list<string>* arguments)
 {
 	list<string>::iterator it = arguments->begin();
 	string diskName = *it;
-	//ui.createDisk(size, diskName);
+	unsigned int size = stoul(*(++it), nullptr);
+	string unit = *(++it);
+
+	if (!unit.compare("MB")) size *= 1024 * 1024;
+	else if (!unit.compare("GB")) size *= 1024 * 1024 * 1024;
+
+	ui.createDisk(size, diskName);
 }
 
 void CommandLineInterface::loopMenu()
@@ -20,7 +26,7 @@ void CommandLineInterface::loopMenu()
 
 	while (command.compare("exit"))
 	{
-		cout << ">\n";
+		cout << ">";
 		getline(cin, command);
 		words = Parser::parseCommand(command);
 		evaluateCommands(words);
