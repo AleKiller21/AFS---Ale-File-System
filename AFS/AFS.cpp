@@ -108,6 +108,25 @@ int AFS::importFile(std::string filePath, std::string name)
 	return 0;
 }
 
+list<FileInfo>* AFS::listFiles()
+{
+	list<FileInfo>* files = new list<FileInfo>();
+
+	for (int i = 0; i < super.totalInodes; i++)
+	{
+		if (directory[i].available) continue;
+
+		FileInfo info;
+		strcpy_s(info.name, directory[i].name);
+		info.inode = directory[i].inode;
+		info.sizeInBytes = inodes[directory[i].inode].size;
+		info.sizeInDisk = inodes[directory[i].inode].dataBlocks * super.blockSize;
+		files->push_back(info);
+	}
+
+	return files;
+}
+
 void AFS::loadStructuresToMemory()
 {
 	loadSuperBlock();

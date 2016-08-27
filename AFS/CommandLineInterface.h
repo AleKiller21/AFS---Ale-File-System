@@ -22,6 +22,7 @@ public:
 	int mountFileSystem(list<string>* arguments);
 	int openDisk(string diskName);
 	int createEmptyFile(string fileName);
+	int listFiles();
 
 	~CommandLineInterface();
 };

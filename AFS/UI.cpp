@@ -42,6 +42,11 @@ int UI::createEmptyFile(std::string fileName)
 	return fileSystem.createEmptyFile(fileName);
 }
 
+std::list<FileInfo>* UI::listFiles()
+{
+	return fileSystem.listFiles();
+}
+
 char* UI::setPartition(unsigned int size)
 {
 	char* buffer = new char[size];

@@ -56,6 +56,26 @@ int CommandLineInterface::createEmptyFile(string fileName)
 	return ui.createEmptyFile(fileName);
 }
 
+int CommandLineInterface::listFiles()
+{
+	list<FileInfo>* files =  ui.listFiles();
+	cout << "\n";
+
+	for (list<FileInfo>::iterator it = files->begin(); it != files->end(); ++it)
+	{
+		cout << "Name: " << (*it).name << endl;
+		cout << "Inodo: " << (*it).inode << endl;
+		cout << "Size on Disk: " << (*it).sizeInDisk << " bytes" << endl;
+		cout << "Size on Bytes: " << (*it).sizeInBytes << " bytes" << endl;
+		cout << "\n";
+	}
+
+	cout << "\n";
+	files->clear();
+	delete files;
+	return 0;
+}
+
 int CommandLineInterface::evaluateCommands(list<string>* sentence)
 {
 	string command = sentence->front();
@@ -87,6 +107,12 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 		//CommandValidations::
 		sentence->erase(sentence->begin());
 		return createEmptyFile(sentence->front());
+	}
+
+	if (!command.compare("ls"))
+	{
+		//CommandValidations::
+		return listFiles();
 	}
 
 	return -1;

@@ -16,6 +16,7 @@ public:
 	int openDisk(std::string diskName);
 	int importFile(std::string fileName, std::string name);
 	int createEmptyFile(std::string fileName);
+	std::list<FileInfo>* listFiles();
 
 	~UI();
 };

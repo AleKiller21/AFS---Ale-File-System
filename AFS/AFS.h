@@ -36,6 +36,14 @@ struct Inode
 	unsigned int blockPointer;
 };
 
+struct FileInfo
+{
+	char name[256];
+	int inode;
+	unsigned int sizeInBytes;
+	unsigned int sizeInDisk;
+};
+
 class AFS
 {
 
@@ -76,6 +84,7 @@ public:
 	int createEmptyFile(std::string name);
 	int openDisk(std::string name);
 	int importFile(std::string filePath, std::string name);
+	std::list<FileInfo>* listFiles();
 
 	~AFS();
 };
