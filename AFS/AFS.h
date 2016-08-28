@@ -32,7 +32,7 @@ struct Inode
 	bool available;
 	unsigned int size;
 	int dataBlocks;
-	//DateCreated
+	char DateCreated[32];
 	//DateLastModified
 	unsigned int blockPointer;
 };
@@ -40,6 +40,7 @@ struct Inode
 struct FileInfo
 {
 	char name[256];
+	char DateCreated[32];
 	int inode;
 	unsigned int sizeInBytes;
 	unsigned int sizeInDisk;

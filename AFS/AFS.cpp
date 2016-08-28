@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "AFS.h"
+#include <ctime>
 
 #define FIRST_BIT_WORD 2147483648
 #define MAX_SIZE_WORD 4294967295
@@ -155,6 +156,7 @@ list<FileInfo>* AFS::listFiles() const
 		FileInfo info;
 		strcpy_s(info.name, directory[i].name);
 		info.inode = directory[i].inode;
+		strcpy_s(info.DateCreated, inodes[directory[i].inode].DateCreated);
 		info.sizeInBytes = inodes[directory[i].inode].size;
 		info.sizeInDisk = inodes[directory[i].inode].dataBlocks * super.blockSize;
 		files->push_back(info);
@@ -408,6 +410,9 @@ int AFS::calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord
 
 int AFS::assignInodeToFile(unsigned int fileSize, int* dataBlocks) const
 {
+	time_t raw;
+	int sixHoursSeconds = 21600;
+
 	for (int i = 0; i < super.totalInodes; i++)
 	{
 		if (!inodes[i].available) continue;
@@ -416,6 +421,11 @@ int AFS::assignInodeToFile(unsigned int fileSize, int* dataBlocks) const
 		inodes[i].blockPointer = dataBlocks[0];
 		inodes[i].dataBlocks = ceil(static_cast<double>(fileSize) / super.blockSize);
 		inodes[i].size = fileSize;
+		time(&raw);
+		//raw -= sixHoursSeconds;
+		//raw-= 43200;
+		//strcpy_s(inodes[i].DateCreated, ctime(&raw));
+		ctime_s(inodes[i].DateCreated, sizeof(inodes[i].DateCreated), &raw);
 		return i;
 	}
 

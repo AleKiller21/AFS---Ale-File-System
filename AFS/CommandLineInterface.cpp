@@ -84,6 +84,7 @@ int CommandLineInterface::listFiles()
 		cout << "Inodo: " << (*it).inode << endl;
 		cout << "Size on Disk: " << (*it).sizeInDisk << " bytes" << endl;
 		cout << "Size on Bytes: " << (*it).sizeInBytes << " bytes" << endl;
+		printf_s("Date Created: %s", (*it).DateCreated); cout << "\n";
 		cout << "\n";
 	}
 
