@@ -63,6 +63,11 @@ int UI::createEmptyFile(std::string fileName)
 	return fileSystem.createEmptyFile(fileName);
 }
 
+int UI::renameFile(std::string fileCurrentName, std::string fileNewName)
+{
+	return fileSystem.renameFile(fileCurrentName, fileNewName);
+}
+
 bool UI::checkDiskExists(std::string diskName)
 {
 	ifstream disk(diskName.c_str());

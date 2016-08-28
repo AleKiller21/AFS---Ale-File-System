@@ -12,6 +12,7 @@ public:
 	static int validateTouchCommand(list<string>* arguments);
 	static int validateCommandsWithoutArguments(list<string>* arguments);
 	static int validateFormatCommand(list<string>* arguments);
+	static int validateRenameCommand(list<string>* arguments);
 		
 	~CommandValidations();
 };

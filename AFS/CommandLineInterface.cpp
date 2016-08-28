@@ -71,7 +71,7 @@ int CommandLineInterface::createEmptyFile(string fileName)
 	return ui.createEmptyFile(fileName);
 }
 
-int CommandLineInterface::listFiles()
+int CommandLineInterface::listFiles() const
 {
 	list<FileInfo>* files =  ui.listFiles();
 	if (!files) return 7;
@@ -93,7 +93,7 @@ int CommandLineInterface::listFiles()
 	return 0;
 }
 
-int CommandLineInterface::showFileSystemInfo()
+int CommandLineInterface::showFileSystemInfo() const
 {
 	list<unsigned int>* info = ui.getFileSystemInfo();
 	if (!info) return 7;
@@ -121,6 +121,11 @@ int CommandLineInterface::showFileSystemInfo()
 	info->clear();
 	delete info;
 	return 0;
+}
+
+int CommandLineInterface::renameFile(string currentFileName, string newFileName)
+{
+	return ui.renameFile(currentFileName, newFileName);
 }
 
 int CommandLineInterface::help()
@@ -233,6 +238,16 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 		error = CommandValidations::validateFormatCommand(sentence);
 		if (error != 0) return error;
 		return formatDisk(sentence->front());
+	}
+
+	if (!command.compare("rename"))
+	{
+		sentence->erase(sentence->begin());
+		list<string>::iterator it = sentence->begin();
+		error = CommandValidations::validateRenameCommand(sentence);
+		if (error != 0) return error;
+		string currentName = *it;
+		return renameFile(currentName, *(++it));
 	}
 
 	return 200;

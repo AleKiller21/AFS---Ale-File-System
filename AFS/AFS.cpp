@@ -16,6 +16,7 @@
 #define DISK_NOT_EXIST 9
 #define NO_FILE_SYSTEM 11
 #define DISK_ALREADY_FORMATTED 12
+#define FILE_NOT_FOUND 13
 
 using namespace std;
 
@@ -115,6 +116,30 @@ int AFS::importFile(string filePath, string name)
 	file.close();
 
 	return 0;
+}
+
+int AFS::renameFile(std::string currentName, std::string newName)
+{
+	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
+
+	bool found = false;
+
+	for (int i = 0; i < super.totalInodes; i++)
+	{
+		if (directory[i].available) continue;
+		if (currentName.compare(directory[i].name)) continue;
+
+		strcpy_s(directory[i].name, newName.c_str());
+		found = true;
+		break;
+	}
+
+	if (!found) return FILE_NOT_FOUND;
+
+	disk.seekp(super.directoryBlock * super.blockSize);
+	disk.write(reinterpret_cast<char*>(directory), super.directorySize);
+
+	return SUCCESS;
 }
 
 list<unsigned int>* AFS::getFileSystemInfo() const

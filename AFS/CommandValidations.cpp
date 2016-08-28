@@ -8,6 +8,7 @@
 #define INVALID_SIZE_ARGUMENT 102
 #define INVALID_SIZE_UNIT 103
 #define INVALID_FILE_NAME 104
+#define FILE_NEW_NAME_INVALID 105
 
 
 CommandValidations::CommandValidations()
@@ -76,6 +77,18 @@ int CommandValidations::validateFormatCommand(list<string>* arguments)
 
 	if (arguments->size() != 1) return WRONG_NUMBER_ARGUMENTS;
 	if (!(*it).compare("") || !(*it).compare(" ")) return DISK_NAME_MISSING;
+
+	return SUCCESS;
+}
+
+int CommandValidations::validateRenameCommand(list<string>* arguments)
+{
+	list<string>::iterator it = arguments->begin();
+
+	if (arguments->size() != 2) return WRONG_NUMBER_ARGUMENTS;
+	if (!(*it).compare("") || !(*it).compare(" ")) return INVALID_FILE_NAME;
+	++it;
+	if (!(*it).compare("") || !(*it).compare(" ")) return FILE_NEW_NAME_INVALID;
 
 	return SUCCESS;
 }

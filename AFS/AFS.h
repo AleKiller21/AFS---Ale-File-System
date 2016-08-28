@@ -89,6 +89,7 @@ public:
 	int openDisk(std::string name);
 	int closeDisk();
 	int importFile(std::string filePath, std::string name);
+	int renameFile(std::string currentName, std::string newName);
 	std::list<unsigned int>* getFileSystemInfo() const;
 	std::list<FileInfo>* listFiles() const;
 

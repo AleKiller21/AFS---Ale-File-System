@@ -20,6 +20,7 @@ public:
 	int closeDisk();
 	int importFile(std::string fileName, std::string name);
 	int createEmptyFile(std::string fileName);
+	int renameFile(std::string fileCurrentName, std::string fileNewName);
 	std::list<FileInfo>* listFiles() const;
 	std::list<unsigned int>* getFileSystemInfo() const;
 
