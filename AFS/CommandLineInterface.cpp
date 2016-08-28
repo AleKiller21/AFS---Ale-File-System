@@ -5,6 +5,7 @@
 CommandLineInterface::CommandLineInterface()
 {
 	commands.push_back("crtdsk <DISK_NAME> <SIZE> <MB/GB> -- Creates a new disk with a primary partition that will have afs mounted.");
+	commands.push_back("rename <FILE_NAME> <NEW_NAME> -- Renames the specified file with the new name in the second argument.");
 	commands.push_back("open <DISK_NAME> -- open the disk with the specified name.");
 	commands.push_back("touch <FILE_NAME> -- Creates an empty file with the specified name.");
 	commands.push_back("format <DISK_NAME> -- Applies a logic format to the specified disk. This action is required in order to open it.");
