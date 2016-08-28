@@ -9,12 +9,7 @@ UI::UI()
 
 int UI::createDisk(unsigned int size, string diskName)
 {
-	ifstream disk(diskName.c_str());
-	if (disk)
-	{
-		disk.close();
-		return 10;
-	}
+	if (checkDiskExists(diskName)) return 10;
 
 	char* buffer;
 	ofstream out(diskName.c_str(), ios::binary);
@@ -25,6 +20,13 @@ int UI::createDisk(unsigned int size, string diskName)
 
 	delete[] buffer;
 	buffer = nullptr;
+
+	return 0;
+}
+
+int UI::formatDisk(std::string diskName)
+{
+	if (!checkDiskExists(diskName)) return 9;
 
 	return fileSystem.writeFileSystemStructuresToDisk(diskName);
 }
@@ -41,6 +43,8 @@ int UI::unmountFileSystem()
 
 int UI::openDisk(std::string diskName)
 {
+	if (!checkDiskExists(diskName)) return 9;
+
 	return fileSystem.openDisk(diskName);
 }
 
@@ -57,6 +61,19 @@ int UI::importFile(std::string fileName, string name)
 int UI::createEmptyFile(std::string fileName)
 {
 	return fileSystem.createEmptyFile(fileName);
+}
+
+bool UI::checkDiskExists(std::string diskName)
+{
+	ifstream disk(diskName.c_str());
+	if (disk)
+	{
+		disk.close();
+		return true;
+	}
+
+	disk.close();
+	return false;
 }
 
 std::list<FileInfo>* UI::listFiles() const

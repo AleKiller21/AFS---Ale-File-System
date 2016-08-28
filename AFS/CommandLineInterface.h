@@ -23,6 +23,7 @@ public:
 
 	CommandLineInterface();
 	int createDisk(list<string>* arguments);
+	int formatDisk(string diskName);
 	void loopMenu();
 	int mountFileSystem();
 	int unmountFileSystem();

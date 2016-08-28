@@ -70,6 +70,16 @@ int CommandValidations::validateCommandsWithoutArguments(list<string>* arguments
 	return SUCCESS;
 }
 
+int CommandValidations::validateFormatCommand(list<string>* arguments)
+{
+	list<string>::iterator it = arguments->begin();
+
+	if (arguments->size() != 1) return WRONG_NUMBER_ARGUMENTS;
+	if (!(*it).compare("") || !(*it).compare(" ")) return DISK_NAME_MISSING;
+
+	return SUCCESS;
+}
+
 CommandValidations::~CommandValidations()
 {
 }

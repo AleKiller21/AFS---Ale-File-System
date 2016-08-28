@@ -2,6 +2,7 @@
 
 struct SuperBlock
 {
+	bool state;
 	int totalBlocks;
 	int freeBlocks;
 	int usedBlocks;
@@ -75,6 +76,7 @@ class AFS
 	void restoreBitmap();
 	bool isFileSystemMounted() const;
 	bool checkFileExist(std::string name) const;
+	bool checkFileSystemState(std::string name);
 
 public:
 
@@ -82,7 +84,6 @@ public:
 	int writeFileSystemStructuresToDisk(std::string diskName);
 	int mountFileSystem();
 	int unmountFileSystem();
-	//int validateFileSystemMount();
 	int createEmptyFile(std::string name);
 	int openDisk(std::string name);
 	int closeDisk();

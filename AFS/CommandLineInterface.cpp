@@ -6,9 +6,10 @@ CommandLineInterface::CommandLineInterface()
 {
 	commands.push_back("crtdsk <DISK_NAME> <SIZE> <MB/GB> -- Creates a new disk with a primary partition that will have afs mounted.");
 	commands.push_back("open <DISK_NAME> -- open the disk with the specified name.");
+	commands.push_back("touch <FILE_NAME> -- Creates an empty file with the specified name.");
+	commands.push_back("format <DISK_NAME> -- Applies a logic format to the specified disk. This action is required in order to open it.");
 	commands.push_back("mount -- Loads afs structures to memory.");
 	commands.push_back("unmount -- Removes afs structures from memory. You won't be able to do anything until you mount them back.");
-	commands.push_back("touch <FILE_NAME> -- Creates an empty file with the specified name.");
 	commands.push_back("ls -- Lists all the existing files and their corresponding info.");
 	commands.push_back("help -- Shows all the commands available, the arguments they require, and a brief description of each of them.");
 }
@@ -24,6 +25,11 @@ int CommandLineInterface::createDisk(list<string>* arguments)
 	else if (!unit.compare("GB")) size *= 1024 * 1024 * 1024;
 
 	return ui.createDisk(size, diskName);
+}
+
+int CommandLineInterface::formatDisk(string diskName)
+{
+	return ui.formatDisk(diskName);
 }
 
 void CommandLineInterface::loopMenu()
@@ -94,8 +100,9 @@ int CommandLineInterface::showFileSystemInfo()
 	cout << "\n";
 
 	list<unsigned int>::iterator it = info->begin();
+	cout << "State : " << *it << endl;
 	cout << "Partition Size : " << *(++it) << endl;
-	cout << "Total blocks : " << *it << endl;
+	cout << "Total blocks : " << *(++it) << endl;
 	cout << "Free blocks : " << *(++it) << endl;
 	cout << "Used blocks : " << *(++it) << endl;
 	cout << "Block size : " << *(++it) << endl;
@@ -217,6 +224,14 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 		error = CommandValidations::validateCommandsWithoutArguments(sentence);
 		if (error != 0) return error;
 		return showFileSystemInfo();
+	}
+
+	if (!command.compare("format"))
+	{
+		sentence->erase(sentence->begin());
+		error = CommandValidations::validateFormatCommand(sentence);
+		if (error != 0) return error;
+		return formatDisk(sentence->front());
 	}
 
 	return 200;
