@@ -68,7 +68,7 @@ class AFS
 	int calculateInodeTableInitialBlock() const;
 	int calculateDirectoryInitialBlock() const;
 	int calculateInitialDataBlock() const;
-	int createNewFile(unsigned int size, std::string name);
+	int createNewFile(unsigned int size, std::string name, char* buffer);
 	int checkIfEnoughFreeBlocks(unsigned int fileSize) const;
 	int* getBlocksForFile(unsigned int size);
 	int calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord);
@@ -78,7 +78,6 @@ class AFS
 	bool isFileSystemMounted() const;
 	bool checkFileExist(std::string name) const;
 	bool checkFileSystemState(std::string name);
-	//std::string extractNameFromPath(std::string filePath);
 
 public:
 

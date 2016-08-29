@@ -80,26 +80,9 @@ bool AFS::checkFileSystemState(std::string name)
 	return state;
 }
 
-//std::string AFS::extractNameFromPath(std::string filePath)
-//{
-//	int lastBackSlashPosition = -1;
-//	int fileNameStart = 0;
-//	string name;
-//
-//	for (int i = 0; i < filePath.size(); i++)
-//	{
-//		if (filePath[i] == '\\') lastBackSlashPosition = i;
-//	}
-//
-//	fileNameStart = ++lastBackSlashPosition;
-//	name = filePath.substr(fileNameStart);
-//
-//	return name;
-//}
-
 int AFS::createEmptyFile(std::string name)
 {
-	return createNewFile(1, name);
+	return createNewFile(1, name, nullptr);
 }
 
 int AFS::openDisk(string name)
@@ -137,8 +120,8 @@ int AFS::importFile(list<string>* path)
 	string name = Parser::extractNameFromPath(filePath);
 	unsigned int size = file.tellg();
 	char* buffer = new char[size];
-
-	createNewFile(size, name);
+	//TODO Extract bytes from file into buffer
+	createNewFile(size, name, buffer);
 
 	file.close();
 	delete[] buffer;
@@ -396,7 +379,7 @@ int AFS::calculateInodeTableInitialBlock() const
 	return directoryBlocks + super.directoryBlock;
 }
 
-int AFS::createNewFile(unsigned int size, std::string name)
+int AFS::createNewFile(unsigned int size, std::string name, char* buffer)
 {
 	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
 	if (!checkIfEnoughFreeBlocks(size)) return NOT_ENOUGH_BLOCKS;
@@ -411,7 +394,8 @@ int AFS::createNewFile(unsigned int size, std::string name)
 	}
 
 	saveFileInDirectoryEntry(name.c_str(), inode);
-	//TODO Write file bytes to data blocks only if size is 1
+	if (buffer) {/*TODO Save bytes from file into its respective data blocks*/ }
+
 	updateSuperBlock(size);
 	updateStructuresInDisk();
 
