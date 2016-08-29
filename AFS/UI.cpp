@@ -53,9 +53,9 @@ int UI::closeDisk()
 	return fileSystem.closeDisk();
 }
 
-int UI::importFile(std::string fileName, string name)
+int UI::importFile(list<string>* path)
 {
-	return fileSystem.importFile(fileName, name); 
+	return fileSystem.importFile(path); 
 }
 
 int UI::createEmptyFile(std::string fileName)

@@ -78,6 +78,7 @@ class AFS
 	bool isFileSystemMounted() const;
 	bool checkFileExist(std::string name) const;
 	bool checkFileSystemState(std::string name);
+	//std::string extractNameFromPath(std::string filePath);
 
 public:
 
@@ -88,7 +89,7 @@ public:
 	int createEmptyFile(std::string name);
 	int openDisk(std::string name);
 	int closeDisk();
-	int importFile(std::string filePath, std::string name);
+	int importFile(std::list<std::string>* path);
 	int renameFile(std::string currentName, std::string newName);
 	std::list<unsigned int>* getFileSystemInfo() const;
 	std::list<FileInfo>* listFiles() const;

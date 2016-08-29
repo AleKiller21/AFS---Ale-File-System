@@ -1,4 +1,7 @@
 #include "stdafx.h"
+#include "Parser.h"
+#include "ErrorHandler.h"
+#include <stdlib.h>
 #include "CommandLineInterface.h"
 
 
@@ -8,6 +11,7 @@ CommandLineInterface::CommandLineInterface()
 	commands.push_back("rename <FILE_NAME> <NEW_NAME> -- Renames the specified file with the new name in the second argument.");
 	commands.push_back("open <DISK_NAME> -- open the disk with the specified name.");
 	commands.push_back("touch <FILE_NAME> -- Creates an empty file with the specified name.");
+	commands.push_back("import <FILE_PATH> -- Will import the file, specified in the path, into AFS.");
 	commands.push_back("format <DISK_NAME> -- Applies a logic format to the specified disk. This action is required in order to open it.");
 	commands.push_back("mount -- Loads afs structures to memory.");
 	commands.push_back("unmount -- Removes afs structures from memory. You won't be able to do anything until you mount them back.");
@@ -127,6 +131,11 @@ int CommandLineInterface::showFileSystemInfo() const
 int CommandLineInterface::renameFile(string currentFileName, string newFileName)
 {
 	return ui.renameFile(currentFileName, newFileName);
+}
+
+int CommandLineInterface::importFile(list<string>* path)
+{
+	return ui.importFile(path);
 }
 
 int CommandLineInterface::help()
@@ -249,6 +258,12 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 		if (error != 0) return error;
 		string currentName = *it;
 		return renameFile(currentName, *(++it));
+	}
+
+	if (!command.compare("import"))
+	{
+		sentence->erase(sentence->begin());
+		return importFile(sentence);
 	}
 
 	return 200;

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "AFS.h"
+#include "Parser.h"
 #include <ctime>
 
 #define FIRST_BIT_WORD 2147483648
@@ -79,6 +80,23 @@ bool AFS::checkFileSystemState(std::string name)
 	return state;
 }
 
+//std::string AFS::extractNameFromPath(std::string filePath)
+//{
+//	int lastBackSlashPosition = -1;
+//	int fileNameStart = 0;
+//	string name;
+//
+//	for (int i = 0; i < filePath.size(); i++)
+//	{
+//		if (filePath[i] == '\\') lastBackSlashPosition = i;
+//	}
+//
+//	fileNameStart = ++lastBackSlashPosition;
+//	name = filePath.substr(fileNameStart);
+//
+//	return name;
+//}
+
 int AFS::createEmptyFile(std::string name)
 {
 	return createNewFile(1, name);
@@ -104,18 +122,28 @@ int AFS::closeDisk()
 	return SUCCESS;
 }
 
-int AFS::importFile(string filePath, string name)
+int AFS::importFile(list<string>* path)
 {
 	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
 
+	string filePath = Parser::constructPath(path);
 	ifstream file(filePath.c_str(), ios::binary | ios::ate);
+	if (!file)
+	{
+		file.close();
+		return FILE_NOT_FOUND;
+	}
+
+	string name = Parser::extractNameFromPath(filePath);
 	unsigned int size = file.tellg();
+	char* buffer = new char[size];
+
 	createNewFile(size, name);
 
-	file.seekg(0);
 	file.close();
+	delete[] buffer;
 
-	return 0;
+	return SUCCESS;
 }
 
 int AFS::renameFile(std::string currentName, std::string newName)
@@ -383,6 +411,7 @@ int AFS::createNewFile(unsigned int size, std::string name)
 	}
 
 	saveFileInDirectoryEntry(name.c_str(), inode);
+	//TODO Write file bytes to data blocks only if size is 1
 	updateSuperBlock(size);
 	updateStructuresInDisk();
 

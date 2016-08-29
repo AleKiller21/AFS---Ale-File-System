@@ -1,10 +1,8 @@
 #pragma once
 #include "UI.h"
-#include "Parser.h"
 #include "CommandValidations.h"
-#include "ErrorHandler.h"
 #include <string>
-#include <stdlib.h>
+
 
 using namespace std;
 
@@ -23,6 +21,7 @@ class CommandLineInterface
 	int listFiles() const;
 	int showFileSystemInfo() const;
 	int renameFile(string currentFileName, string newFileName);
+	int importFile(list<string>* path);
 	int evaluateCommands(list<string>* sentence);
 	int help();
 	int close();

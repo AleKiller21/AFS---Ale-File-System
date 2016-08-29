@@ -9,6 +9,7 @@
 #define INVALID_SIZE_UNIT 103
 #define INVALID_FILE_NAME 104
 #define FILE_NEW_NAME_INVALID 105
+#define INVALID_FILE_PATH 106
 
 
 CommandValidations::CommandValidations()

@@ -23,6 +23,7 @@ using namespace std;
 #define INVALID_SIZE_UNIT 103
 #define INVALID_FILE_NAME 104
 #define FILE_NEW_NAME_INVALID 105
+#define INVALID_FILE_PATH 106
 #define WRONG_COMMAND 200
 
 ErrorHandler::ErrorHandler()
@@ -92,6 +93,9 @@ string ErrorHandler::handleError(int errorCode)
 
 	case FILE_NEW_NAME_INVALID:
 		return "The new name for the file is invalid!";
+
+	case INVALID_FILE_PATH:
+		return "The path is invalid!";
 
 	case WRONG_COMMAND:
 		return "Wrong command!";
