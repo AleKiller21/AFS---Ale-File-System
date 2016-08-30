@@ -156,6 +156,9 @@ list<unsigned int>* AFS::getFileSystemInfo() const
 	info->push_back(super.inodeTableSize);
 	info->push_back(super.inodeTableBlock);
 	info->push_back(super.firstDataBlock);
+	info->push_back(sizeof(SuperBlock));
+	info->push_back(sizeof(DirectoryEntry));
+	info->push_back(sizeof(Inode));
 
 	return info;
 }

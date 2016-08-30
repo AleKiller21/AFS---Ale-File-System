@@ -100,21 +100,24 @@ int CommandLineInterface::showFileSystemInfo() const
 	cout << "\n";
 
 	list<unsigned int>::iterator it = info->begin();
-	cout << "Partition Size : " << *it << endl;
+	cout << "Partition Size : " << *it << " bytes" << endl;
 	cout << "Total blocks : " << *(++it) << endl;
 	cout << "Free blocks : " << *(++it) << endl;
 	cout << "Used blocks : " << *(++it) << endl;
-	cout << "Block size : " << *(++it) << endl;
-	cout << "Bitmap size : " << *(++it) << endl;
+	cout << "Block size : " << *(++it) << " bytes" << endl;
+	cout << "Bitmap size : " << *(++it) << " bytes" << endl;
 	cout << "Bitmap block : " << *(++it) << endl;
 	cout << "Words in bitmap : " << *(++it) << endl;
-	cout << "Directory size : " << *(++it) << endl;
+	cout << "Directory size : " << *(++it) << " bytes" << endl;
 	cout << "Directory block : " << *(++it) << endl;
 	cout << "Total inodes : " << *(++it) << endl;
 	cout << "Free inodes : " << *(++it) << endl;
-	cout << "InodeTable size : " << *(++it) << endl;
+	cout << "InodeTable size : " << *(++it) << " bytes" << endl;
 	cout << "InodeTable block : " << *(++it) << endl;
 	cout << "First data block : " << *(++it) << endl;
+	cout << "sizeof Superblock : " << *(++it) << " bytes" << endl;
+	cout << "sizeof DirectoryEntry : " << *(++it) << " bytes" << endl;
+	cout << "sizeof Inode : " << *(++it) << " bytes" << endl;
 
 	info->clear();
 	delete info;
