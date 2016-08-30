@@ -78,6 +78,7 @@ class AFS
 	bool isFileSystemMounted() const;
 	bool checkFileExist(std::string name) const;
 	bool checkFileSystemState(std::string name);
+	void saveBytesIntoDataBlocks(char* buffer, int* fileBlocks);
 
 public:
 

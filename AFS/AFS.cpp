@@ -80,6 +80,11 @@ bool AFS::checkFileSystemState(std::string name)
 	return state;
 }
 
+void AFS::saveBytesIntoDataBlocks(char* buffer, int* fileBlocks)
+{
+	//TODO
+}
+
 int AFS::createEmptyFile(std::string name)
 {
 	return createNewFile(1, name, nullptr);
@@ -120,7 +125,8 @@ int AFS::importFile(list<string>* path)
 	string name = Parser::extractNameFromPath(filePath);
 	unsigned int size = file.tellg();
 	char* buffer = new char[size];
-	//TODO Extract bytes from file into buffer
+	file.seekg(0);
+	file.read(buffer, size);
 	createNewFile(size, name, buffer);
 
 	file.close();
@@ -394,7 +400,7 @@ int AFS::createNewFile(unsigned int size, std::string name, char* buffer)
 	}
 
 	saveFileInDirectoryEntry(name.c_str(), inode);
-	if (buffer) {/*TODO Save bytes from file into its respective data blocks*/ }
+	if (buffer) saveBytesIntoDataBlocks(buffer, fileBlocks);
 
 	updateSuperBlock(size);
 	updateStructuresInDisk();
