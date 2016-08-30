@@ -21,13 +21,6 @@ int UI::createDisk(unsigned int size, string diskName)
 	delete[] buffer;
 	buffer = nullptr;
 
-	return 0;
-}
-
-int UI::formatDisk(std::string diskName)
-{
-	if (!checkDiskExists(diskName)) return 9;
-
 	return fileSystem.writeFileSystemStructuresToDisk(diskName);
 }
 

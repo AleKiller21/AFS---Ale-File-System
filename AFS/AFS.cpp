@@ -15,7 +15,6 @@
 #define FILE_SYSTEM_NOT_MOUNTED 7
 #define FILE_SYSTEM_ALREADY_MOUNTED 8
 #define DISK_NOT_EXIST 9
-#define NO_FILE_SYSTEM 11
 #define DISK_ALREADY_FORMATTED 12
 #define FILE_NOT_FOUND 13
 
@@ -30,10 +29,6 @@ AFS::AFS()
 
 int AFS::writeFileSystemStructuresToDisk(string diskName)
 {
-	//TODO Allow user to format disk even if this is already formatted. Doing so will rewrite all structures back to disk.
-	if (disk.is_open()) return DISK_ALREADY_OPEN;
-	if (checkFileSystemState(diskName)) return DISK_ALREADY_FORMATTED;
-
 	disk.open(diskName.c_str(), ios::binary | ios::out | ios::in | ios::ate);
 	unsigned int diskSize = disk.tellg();
 
@@ -68,18 +63,6 @@ int AFS::writeFileSystemStructuresToDisk(string diskName)
 	return SUCCESS;
 }
 
-bool AFS::checkFileSystemState(std::string name)
-{
-	bool state = false;
-	ifstream disk(name.c_str(), ios::binary);
-
-	disk.seekg(0);
-	disk.read(reinterpret_cast<char*>(&state), sizeof(bool));
-	disk.close();
-
-	return state;
-}
-
 int AFS::createEmptyFile(std::string name)
 {
 	return createNewFile(1, name, nullptr);
@@ -88,7 +71,6 @@ int AFS::createEmptyFile(std::string name)
 int AFS::openDisk(string name)
 {
 	if (disk.is_open()) return DISK_ALREADY_OPEN;
-	if (!checkFileSystemState(name)) return NO_FILE_SYSTEM;
 
 	disk.open(name.c_str(), ios::binary | ios::out | ios::in);
 
@@ -159,7 +141,6 @@ list<unsigned int>* AFS::getFileSystemInfo() const
 
 	list<unsigned int>* info = new list<unsigned int>();
 
-	info->push_back(super.state);
 	info->push_back(super.partitionSize);
 	info->push_back(super.totalBlocks);
 	info->push_back(super.freeBlocks);
@@ -261,7 +242,6 @@ void AFS::loadInodeTable()
 
 void AFS::initializeSuperBlock(unsigned int partitionSize)
 {
-	super.state = true;
 	super.blockSize = 4096;
 	super.totalBlocks = partitionSize / super.blockSize;
 	super.partitionSize = partitionSize;
