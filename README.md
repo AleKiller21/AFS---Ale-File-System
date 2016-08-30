@@ -1,6 +1,6 @@
 # Proyecto Sistema de Archivos para la clase de Sistemas Operativos II UNITEC#
 
-* El sistema de archivos permite solo 85 inodos. Debido a esto solo habrá 85 entradas en el directorio raíz lo cual solo permitirá la creación de 85 archivos.
+**El sistema de archivos permite solo 85 inodos. Debido a esto solo habrá 85 entradas en el directorio raíz lo cual solo permitirá la creación de 85 archivos.**
 
 ## Estructuras Sistema de Archivos ##
 
