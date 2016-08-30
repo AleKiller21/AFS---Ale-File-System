@@ -22,6 +22,7 @@
 * ls -- Lista todos los archivos existentes con su respectiva información.
 * help -- Muestra todos los comandos disponibles, los argumentos que requieren y una breve descripción del comando.
 * cls -- Limpia la pantalla.
+* exit -- Cierra toda la aplicación.
 
 ## Workflow ##
 
@@ -30,3 +31,4 @@
 3. Montar el sistema de archivos. Este comando cargara todas las estructuras a memoria.
 4. Interactuar con el sistema de archivos.
 5. Cerrar el disco (esto implicitamente ejecutara el comando **unmount**, el cual se puede tambien llamar manualmente).
+6. Cerrar la aplicación.
