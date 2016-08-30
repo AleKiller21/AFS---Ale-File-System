@@ -1,1 +1,1 @@
-# File System project for Operating System 2 class at UNITEC#
+# Proyecto Sistema de Archivos para la clase de Sistemas Operativos II UNITEC#
