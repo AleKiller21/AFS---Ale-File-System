@@ -13,7 +13,6 @@ public:
 
 	UI();
 	int createDisk(unsigned int size, std::string diskName);
-	int formatDisk(std::string diskName);
 	int mountFileSystem();
 	int unmountFileSystem();
 	int openDisk(std::string diskName);

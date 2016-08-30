@@ -13,7 +13,6 @@ class CommandLineInterface
 	list<string> commands;
 
 	int createDisk(list<string>* arguments);
-	int formatDisk(string diskName);
 	int mountFileSystem();
 	int unmountFileSystem();
 	int openDisk(string diskName);

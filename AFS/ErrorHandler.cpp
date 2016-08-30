@@ -14,7 +14,6 @@ using namespace std;
 #define FILE_SYSTEM_ALREADY_MOUNTED 8
 #define DISK_NOT_EXIST 9
 #define DISK_ALREADY_EXISTS 10
-#define NO_FILE_SYSTEM 11
 #define DISK_ALREADY_FORMATTED 12
 #define FILE_NOT_FOUND 13
 #define WRONG_NUMBER_ARGUMENTS 100
@@ -66,9 +65,6 @@ string ErrorHandler::handleError(int errorCode)
 
 	case DISK_ALREADY_EXISTS:
 		return "The specified disk already exists!";
-
-	case NO_FILE_SYSTEM:
-		return "You must first format the disk in order to open it!";
 
 	case DISK_ALREADY_FORMATTED:
 		return "The disk already has a file system written on it!";
