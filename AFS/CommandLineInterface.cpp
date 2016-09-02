@@ -12,6 +12,7 @@ CommandLineInterface::CommandLineInterface()
 	commands.push_back("open <DISK_NAME> -- open the disk with the specified name.");
 	commands.push_back("touch <FILE_NAME> -- Creates an empty file with the specified name.");
 	commands.push_back("import <FILE_PATH> -- Will import the file, specified in the path, into AFS.");
+	commands.push_back("export <FILE_NAME> -- Exports the specified file.");
 	commands.push_back("mount -- Loads afs structures to memory.");
 	commands.push_back("unmount -- Removes afs structures from memory. You won't be able to do anything until you mount them back.");
 	commands.push_back("ls -- Lists all the existing files and their corresponding info.");
@@ -263,10 +264,6 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 	if (!command.compare("export"))
 	{
 		sentence->erase(sentence->begin());
-		//list<string>::iterator it = sentence->begin();
-		//error = CommandValidations::validateRenameCommand(sentence);
-		//if (error != 0) return error;
-		//string currentName = *it;
 		return exportFile(sentence);
 	}
 
