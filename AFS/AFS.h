@@ -80,6 +80,8 @@ class AFS
 	void saveBytesIntoDataBlocks(char* buffer, int* fileBlocks, int inumber);
 	void setUpBuffer(char* buffer, unsigned int sizeOfBuffer);
 	unsigned int convertFileSizeToBlocks(unsigned int size) const;
+	int searchFileInDirectory(std::string fileName) const;
+	void getFileData(int inode, char* buffer);
 
 public:
 
@@ -91,6 +93,7 @@ public:
 	int openDisk(std::string name);
 	int closeDisk();
 	int importFile(std::list<std::string>* path);
+	int exportFile(std::list<std::string>* path);
 	int renameFile(std::string currentName, std::string newName);
 	std::list<unsigned int>* getFileSystemInfo() const;
 	std::list<FileInfo>* listFiles() const;

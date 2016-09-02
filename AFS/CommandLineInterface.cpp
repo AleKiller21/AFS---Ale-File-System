@@ -135,6 +135,11 @@ int CommandLineInterface::importFile(list<string>* path)
 	return ui.importFile(path);
 }
 
+int CommandLineInterface::exportFile(list<string>* path)
+{
+	return ui.exportFile(path);
+}
+
 int CommandLineInterface::help()
 {
 	for (list<string>::iterator it = commands.begin(); it != commands.end(); ++it)
@@ -253,6 +258,16 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 	{
 		sentence->erase(sentence->begin());
 		return importFile(sentence);
+	}
+
+	if (!command.compare("export"))
+	{
+		sentence->erase(sentence->begin());
+		//list<string>::iterator it = sentence->begin();
+		//error = CommandValidations::validateRenameCommand(sentence);
+		//if (error != 0) return error;
+		//string currentName = *it;
+		return exportFile(sentence);
 	}
 
 	return 200;

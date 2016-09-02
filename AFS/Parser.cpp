@@ -46,7 +46,13 @@ string Parser::constructPath(list<string>* path)
 
 	for (list<string>::iterator it = path->begin(); it != path->end(); ++it)
 	{
-		constructedPath += *it + " ";
+		constructedPath += *it;
+		if (++it != path->end())
+		{
+			constructedPath += " ";
+			--it;
+		}
+		else break;
 	}
 
 	return constructedPath;
@@ -55,3 +61,4 @@ string Parser::constructPath(list<string>* path)
 Parser::~Parser()
 {
 }
+//C:\Users\alefe\Unitec\12 Trimestre (XII)\Public Speaking (ING. AV)\Tareas\Exposiciones\Open Source\Open.txt
