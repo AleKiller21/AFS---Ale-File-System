@@ -63,9 +63,29 @@ int AFS::writeFileSystemStructuresToDisk(string diskName)
 	return SUCCESS;
 }
 
-void AFS::saveBytesIntoDataBlocks(char* buffer, int* fileBlocks)
+void AFS::saveBytesIntoDataBlocks(char* buffer, int* fileBlocks, int inumber)
 {
-	//TODO
+	for (int i = 0; i < inodes[inumber].dataBlocks; i++)
+	{
+		unsigned int pointer = i == inodes[inumber].dataBlocks - 1 ? 0 : fileBlocks[i+1];
+		disk.seekp(fileBlocks[i] * super.blockSize);
+		disk.write(buffer, super.bytesAvailablePerBlock);
+		disk.write(reinterpret_cast<char*>(&pointer), sizeof(int));
+		buffer += super.bytesAvailablePerBlock;
+	}
+}
+
+void AFS::setUpBuffer(char* buffer, unsigned int sizeOfBuffer)
+{
+	for (int i = 0; i < sizeOfBuffer; i++)
+	{
+		buffer[i] = '\0';
+	}
+}
+
+unsigned int AFS::convertFileSizeToBlocks(unsigned size) const
+{
+	return ceil(static_cast<double>(size) / super.bytesAvailablePerBlock);
 }
 
 int AFS::createEmptyFile(std::string name)
@@ -106,7 +126,9 @@ int AFS::importFile(list<string>* path)
 
 	string name = Parser::extractNameFromPath(filePath);
 	unsigned int size = file.tellg();
-	char* buffer = new char[size];
+	unsigned int sizeOfBlocks = convertFileSizeToBlocks(size) * super.bytesAvailablePerBlock;
+	char* buffer = new char[sizeOfBlocks];
+	setUpBuffer(buffer, sizeOfBlocks);
 	file.seekg(0);
 	file.read(buffer, size);
 	createNewFile(size, name, buffer);
@@ -152,6 +174,7 @@ list<unsigned int>* AFS::getFileSystemInfo() const
 	info->push_back(super.freeBlocks);
 	info->push_back(super.usedBlocks);
 	info->push_back(super.blockSize);
+	info->push_back(super.bytesAvailablePerBlock);
 	info->push_back(super.bitmapSize);
 	info->push_back(super.bitmapBlock);
 	info->push_back(super.wordsInBitmap);
@@ -252,6 +275,7 @@ void AFS::loadInodeTable()
 void AFS::initializeSuperBlock(unsigned int partitionSize)
 {
 	super.blockSize = 4096;
+	super.bytesAvailablePerBlock = super.blockSize - sizeof(int);
 	super.totalBlocks = partitionSize / super.blockSize;
 	super.partitionSize = partitionSize;
 	super.totalInodes = super.blockSize / sizeof(Inode);
@@ -345,7 +369,7 @@ void AFS::updateStructuresInDisk()
 
 void AFS::updateSuperBlock(unsigned int size)
 {
-	int sizeInBlocks = ceil(static_cast<double>(size) / super.blockSize);
+	int sizeInBlocks = convertFileSizeToBlocks(size);
 	super.freeBlocks -= sizeInBlocks;
 	super.usedBlocks += sizeInBlocks;
 	super.freeInodes--;
@@ -383,7 +407,7 @@ int AFS::createNewFile(unsigned int size, std::string name, char* buffer)
 	}
 
 	saveFileInDirectoryEntry(name.c_str(), inode);
-	if (buffer) saveBytesIntoDataBlocks(buffer, fileBlocks);
+	if (buffer) saveBytesIntoDataBlocks(buffer, fileBlocks, inode);
 
 	updateSuperBlock(size);
 	updateStructuresInDisk();
@@ -394,13 +418,13 @@ int AFS::createNewFile(unsigned int size, std::string name, char* buffer)
 
 int AFS::checkIfEnoughFreeBlocks(unsigned int fileSize) const
 {
-	int sizeInBlocks = ceil(static_cast<double>(fileSize) / super.blockSize);
+	int sizeInBlocks = convertFileSizeToBlocks(fileSize);
 	return sizeInBlocks < super.freeBlocks;
 }
 
 int* AFS::getBlocksForFile(unsigned int size)
 {
-	int sizeInBlocks = ceil(static_cast<double>(size) / super.blockSize);
+	int sizeInBlocks = convertFileSizeToBlocks(size);
 	int* blocks = new int[sizeInBlocks];
 	int iterator = 0;
 	int wordsOccupied = 0;
@@ -446,7 +470,7 @@ int AFS::assignInodeToFile(unsigned int fileSize, int* dataBlocks) const
 
 		inodes[i].available = false;
 		inodes[i].blockPointer = dataBlocks[0];
-		inodes[i].dataBlocks = ceil(static_cast<double>(fileSize) / super.blockSize);
+		inodes[i].dataBlocks = convertFileSizeToBlocks(fileSize);
 		inodes[i].size = fileSize;
 		time(&raw);
 		//raw -= sixHoursSeconds;

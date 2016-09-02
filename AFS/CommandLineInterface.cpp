@@ -105,6 +105,7 @@ int CommandLineInterface::showFileSystemInfo() const
 	cout << "Free blocks : " << *(++it) << endl;
 	cout << "Used blocks : " << *(++it) << endl;
 	cout << "Block size : " << *(++it) << " bytes" << endl;
+	cout << "Data bytes available per block : " << *(++it) << " bytes" << endl;
 	cout << "Bitmap size : " << *(++it) << " bytes" << endl;
 	cout << "Bitmap block : " << *(++it) << endl;
 	cout << "Words in bitmap : " << *(++it) << endl;

@@ -6,6 +6,7 @@ struct SuperBlock
 	int freeBlocks;
 	int usedBlocks;
 	int blockSize;
+	int bytesAvailablePerBlock;
 	int bitmapSize;
 	int directorySize;
 	int wordsInBitmap;
@@ -76,7 +77,9 @@ class AFS
 	void restoreBitmap();
 	bool isFileSystemMounted() const;
 	bool checkFileExist(std::string name) const;
-	void saveBytesIntoDataBlocks(char* buffer, int* fileBlocks);
+	void saveBytesIntoDataBlocks(char* buffer, int* fileBlocks, int inumber);
+	void setUpBuffer(char* buffer, unsigned int sizeOfBuffer);
+	unsigned int convertFileSizeToBlocks(unsigned int size) const;
 
 public:
 
