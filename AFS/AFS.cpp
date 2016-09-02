@@ -156,12 +156,12 @@ int AFS::importFile(list<string>* path)
 	setUpBuffer(buffer, sizeOfBlocks);
 	file.seekg(0);
 	file.read(buffer, size);
-	createNewFile(size, name, buffer);
+	int state = createNewFile(size, name, buffer);
 
 	file.close();
 	delete[] buffer;
 
-	return SUCCESS;
+	return state;
 }
 
 int AFS::exportFile(list<string>* path)
@@ -174,12 +174,15 @@ int AFS::exportFile(list<string>* path)
 
 	int size = inodes[inode].dataBlocks * super.bytesAvailablePerBlock;
 	char* buffer = new char[size];
+	char* masterBuffer = new char[inodes[inode].size];
 	getFileData(inode, buffer);
+	memcpy(masterBuffer, buffer, inodes[inode].size);
 	ofstream out(fileName.c_str(), ios::binary);
-	out.write(buffer, size);
+	out.write(masterBuffer, inodes[inode].size);
 	
 	out.close();
 	delete[] buffer;
+	delete[] masterBuffer;
 
 	return SUCCESS;
 }
