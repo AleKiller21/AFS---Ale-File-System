@@ -56,6 +56,11 @@ int UI::exportFile(list<string>* path)
 	return fileSystem.exportFile(path);
 }
 
+int UI::deleteFile(list<string>* path)
+{
+	return fileSystem.deleteFile(path);
+}
+
 int UI::createEmptyFile(std::string fileName)
 {
 	return fileSystem.createEmptyFile(fileName);

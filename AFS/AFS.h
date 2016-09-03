@@ -82,6 +82,8 @@ class AFS
 	unsigned int convertFileSizeToBlocks(unsigned int size) const;
 	int searchFileInDirectory(std::string fileName) const;
 	void getFileData(int inode, char* buffer);
+	void freeBlocksOnBitmap(std::list<unsigned int>* blocks) const;
+	std::list<unsigned int>* getFileBlocks(int inode);
 
 public:
 
@@ -95,6 +97,7 @@ public:
 	int importFile(std::list<std::string>* path);
 	int exportFile(std::list<std::string>* path);
 	int renameFile(std::string currentName, std::string newName);
+	int deleteFile(std::list<std::string>* path);
 	std::list<unsigned int>* getFileSystemInfo() const;
 	std::list<FileInfo>* listFiles() const;
 

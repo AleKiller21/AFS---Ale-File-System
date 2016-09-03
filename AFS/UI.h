@@ -19,6 +19,7 @@ public:
 	int closeDisk();
 	int importFile(std::list<std::string>* path);
 	int exportFile(std::list<std::string>* path);
+	int deleteFile(std::list<std::string>* path);
 	int createEmptyFile(std::string fileName);
 	int renameFile(std::string fileCurrentName, std::string fileNewName);
 	std::list<FileInfo>* listFiles() const;

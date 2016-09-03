@@ -94,7 +94,7 @@ int AFS::searchFileInDirectory(std::string fileName) const
 	{
 		if (directory[i].available) continue;
 
-		if (!fileName.compare(directory[i].name)) return directory[i].inode;
+		if (!fileName.compare(directory[i].name)) return i;
 	}
 
 	return -1;
@@ -111,6 +111,32 @@ void AFS::getFileData(int inode, char* buffer)
 		disk.read(reinterpret_cast<char*>(&pointer), sizeof(int));
 		buffer += super.bytesAvailablePerBlock;
 	}
+}
+
+void AFS::freeBlocksOnBitmap(std::list<unsigned>* blocks) const
+{
+	for (list<unsigned int>::iterator it = blocks->begin(); it != blocks->end(); ++it)
+	{
+		int word = *it / (sizeof(int) * 8);
+		int offset = *it - (word * sizeof(int) * 8);
+		bitmap[word] ^= (FIRST_BIT_WORD >> offset);
+	}
+}
+
+std::list<unsigned int>* AFS::getFileBlocks(int inode)
+{
+	list<unsigned int>* pointers = new list<unsigned>();
+	unsigned int pointer = inodes[inode].blockPointer;
+
+	for (int i = 0; i < inodes[inode].dataBlocks; i++)
+	{
+		pointers->push_back(pointer);
+		disk.seekg(pointer * super.blockSize);
+		disk.seekg(super.bytesAvailablePerBlock, ios::cur);
+		disk.read(reinterpret_cast<char*>(&pointer), sizeof(int));
+	}
+
+	return pointers;
 }
 
 int AFS::createEmptyFile(std::string name)
@@ -169,7 +195,7 @@ int AFS::exportFile(list<string>* path)
 	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
 
 	string fileName = Parser::constructPath(path);
-	int inode = searchFileInDirectory(fileName);
+	int inode = directory[searchFileInDirectory(fileName)].inode;
 	if (inode == -1) return FILE_NOT_FOUND;
 
 	int size = inodes[inode].dataBlocks * super.bytesAvailablePerBlock;
@@ -208,6 +234,29 @@ int AFS::renameFile(std::string currentName, std::string newName)
 	disk.seekp(super.directoryBlock * super.blockSize);
 	disk.write(reinterpret_cast<char*>(directory), super.directorySize);
 
+	return SUCCESS;
+}
+
+int AFS::deleteFile(list<string>* path)
+{
+	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
+
+	string fileName = Parser::constructPath(path);
+	int entry = searchFileInDirectory(fileName);
+
+	if (entry == -1) return FILE_NOT_FOUND;
+
+	directory[entry].available = true;
+	inodes[directory[entry].inode].available = true;
+	list<unsigned int>* pointers = getFileBlocks(directory[entry].inode);
+	freeBlocksOnBitmap(pointers);
+	super.freeBlocks += pointers->size();
+	super.usedBlocks -= pointers->size();
+	super.freeInodes++;
+
+	updateStructuresInDisk();
+	pointers->clear();
+	delete pointers;
 	return SUCCESS;
 }
 

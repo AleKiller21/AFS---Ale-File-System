@@ -141,6 +141,11 @@ int CommandLineInterface::exportFile(list<string>* path)
 	return ui.exportFile(path);
 }
 
+int CommandLineInterface::deleteFile(list<string>* path)
+{
+	return ui.deleteFile(path);
+}
+
 int CommandLineInterface::help()
 {
 	for (list<string>::iterator it = commands.begin(); it != commands.end(); ++it)
@@ -265,6 +270,12 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 	{
 		sentence->erase(sentence->begin());
 		return exportFile(sentence);
+	}
+
+	if (!command.compare("delete"))
+	{
+		sentence->erase(sentence->begin());
+		return deleteFile(sentence);
 	}
 
 	return 200;

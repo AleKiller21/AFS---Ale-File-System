@@ -22,6 +22,7 @@ class CommandLineInterface
 	int renameFile(string currentFileName, string newFileName);
 	int importFile(list<string>* path);
 	int exportFile(list<string>* path);
+	int deleteFile(list<string>* path);
 	int evaluateCommands(list<string>* sentence);
 	int help();
 	int close();
