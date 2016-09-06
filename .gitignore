@@ -24,7 +24,9 @@ bld/
 [Oo]bj/
 [Ll]og/
 
+#Testing and personal files
 TODO.txt
+*.af
 
 # Visual Studio 2015 cache/options directory
 .vs/
