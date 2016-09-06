@@ -143,7 +143,15 @@ int CommandLineInterface::exportFile(list<string>* path)
 
 int CommandLineInterface::deleteFile(list<string>* path)
 {
-	return ui.deleteFile(path);
+	cout << "Are you sure you want to delete this file? (Y)/N ";
+	//char response;
+	//cin >> response;
+	string response;
+	getline(cin, response);
+	if (response == "Y" || response == "y")
+		return ui.deleteFile(path);
+
+	return 0;
 }
 
 int CommandLineInterface::help()
