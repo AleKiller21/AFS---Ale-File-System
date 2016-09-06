@@ -195,8 +195,9 @@ int AFS::exportFile(list<string>* path)
 	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
 
 	string fileName = Parser::constructPath(path);
-	int inode = directory[searchFileInDirectory(fileName)].inode;
-	if (inode == -1) return FILE_NOT_FOUND;
+	int entry = searchFileInDirectory(fileName);
+	if (entry == -1) return FILE_NOT_FOUND;
+	int inode = directory[entry].inode;
 
 	int size = inodes[inode].dataBlocks * super.bytesAvailablePerBlock;
 	char* buffer = new char[size];
