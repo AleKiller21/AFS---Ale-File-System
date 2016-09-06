@@ -139,8 +139,9 @@ std::list<unsigned int>* AFS::getFileBlocks(int inode)
 	return pointers;
 }
 
-int AFS::createEmptyFile(std::string name)
+int AFS::createEmptyFile(list<string>* path)
 {
+	string name = Parser::constructPath(path);
 	return createNewFile(1, name, nullptr);
 }
 

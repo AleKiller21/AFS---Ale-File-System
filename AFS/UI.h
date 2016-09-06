@@ -20,7 +20,7 @@ public:
 	int importFile(std::list<std::string>* path);
 	int exportFile(std::list<std::string>* path);
 	int deleteFile(std::list<std::string>* path);
-	int createEmptyFile(std::string fileName);
+	int createEmptyFile(std::list<std::string>* sentence);
 	int renameFile(std::string fileCurrentName, std::string fileNewName);
 	std::list<FileInfo>* listFiles() const;
 	std::list<unsigned int>* getFileSystemInfo() const;

@@ -91,7 +91,7 @@ public:
 	int writeFileSystemStructuresToDisk(std::string diskName);
 	int mountFileSystem();
 	int unmountFileSystem();
-	int createEmptyFile(std::string name);
+	int createEmptyFile(std::list<std::string>* path);
 	int openDisk(std::string name);
 	int closeDisk();
 	int importFile(std::list<std::string>* path);

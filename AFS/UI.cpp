@@ -61,9 +61,9 @@ int UI::deleteFile(list<string>* path)
 	return fileSystem.deleteFile(path);
 }
 
-int UI::createEmptyFile(std::string fileName)
+int UI::createEmptyFile(list<string>* sentence)
 {
-	return fileSystem.createEmptyFile(fileName);
+	return fileSystem.createEmptyFile(sentence);
 }
 
 int UI::renameFile(std::string fileCurrentName, std::string fileNewName)

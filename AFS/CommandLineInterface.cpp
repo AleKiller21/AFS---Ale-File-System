@@ -66,9 +66,9 @@ int CommandLineInterface::openDisk(string diskName)
 	return ui.openDisk(diskName);
 }
 
-int CommandLineInterface::createEmptyFile(string fileName)
+int CommandLineInterface::createEmptyFile(list<string>* sentence)
 {
-	return ui.createEmptyFile(fileName);
+	return ui.createEmptyFile(sentence);
 }
 
 int CommandLineInterface::listFiles() const
@@ -204,9 +204,7 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 	if (!command.compare("touch"))
 	{
 		sentence->erase(sentence->begin());
-		error = CommandValidations::validateTouchCommand(sentence);
-		if (error != 0) return error;
-		return createEmptyFile(sentence->front());
+		return createEmptyFile(sentence);
 	}
 
 	if (!command.compare("ls"))

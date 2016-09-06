@@ -16,7 +16,7 @@ class CommandLineInterface
 	int mountFileSystem();
 	int unmountFileSystem();
 	int openDisk(string diskName);
-	int createEmptyFile(string fileName);
+	int createEmptyFile(list<string>* sentence);
 	int listFiles() const;
 	int showFileSystemInfo() const;
 	int renameFile(string currentFileName, string newFileName);
