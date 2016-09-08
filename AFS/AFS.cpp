@@ -591,7 +591,7 @@ int AFS::assignInodeToFile(unsigned int fileSize, int* dataBlocks) const
 		inodes[i].available = false;
 		inodes[i].blockPointer = dataBlocks[0];
 		inodes[i].dataBlocks = convertFileSizeToBlocks(fileSize);
-		inodes[i].size = fileSize;
+		inodes[i].size = fileSize == 1 ? 0: fileSize;
 		time(&raw);
 		//raw -= sixHoursSeconds;
 		//raw-= 43200;
