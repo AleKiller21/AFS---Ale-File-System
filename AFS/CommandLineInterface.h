@@ -19,7 +19,7 @@ class CommandLineInterface
 	int createEmptyFile(list<string>* sentence);
 	int listFiles() const;
 	int showFileSystemInfo() const;
-	int renameFile(string currentFileName, string newFileName);
+	int renameFile(list<string>* path);
 	int importFile(list<string>* path);
 	int exportFile(list<string>* path);
 	int deleteFile(list<string>* path);

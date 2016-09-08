@@ -66,9 +66,9 @@ int UI::createEmptyFile(list<string>* sentence)
 	return fileSystem.createEmptyFile(sentence);
 }
 
-int UI::renameFile(std::string fileCurrentName, std::string fileNewName)
+int UI::renameFile(list<string>* path)
 {
-	return fileSystem.renameFile(fileCurrentName, fileNewName);
+	return fileSystem.renameFile(path);
 }
 
 bool UI::checkDiskExists(std::string diskName)

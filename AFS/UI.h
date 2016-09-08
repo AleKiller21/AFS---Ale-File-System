@@ -21,7 +21,7 @@ public:
 	int exportFile(std::list<std::string>* path);
 	int deleteFile(std::list<std::string>* path);
 	int createEmptyFile(std::list<std::string>* sentence);
-	int renameFile(std::string fileCurrentName, std::string fileNewName);
+	int renameFile(std::list<std::string>* path);
 	std::list<FileInfo>* listFiles() const;
 	std::list<unsigned int>* getFileSystemInfo() const;
 

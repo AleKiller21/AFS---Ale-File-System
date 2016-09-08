@@ -24,6 +24,7 @@ using namespace std;
 #define FILE_NEW_NAME_INVALID 105
 #define INVALID_FILE_PATH 106
 #define WRONG_COMMAND 200
+#define INVALID_COMMAND_STRUCTURE 201
 
 ErrorHandler::ErrorHandler()
 {

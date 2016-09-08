@@ -126,9 +126,9 @@ int CommandLineInterface::showFileSystemInfo() const
 	return 0;
 }
 
-int CommandLineInterface::renameFile(string currentFileName, string newFileName)
+int CommandLineInterface::renameFile(list<string>* path)
 {
-	return ui.renameFile(currentFileName, newFileName);
+	return ui.renameFile(path);
 }
 
 int CommandLineInterface::importFile(list<string>* path)
@@ -259,11 +259,12 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 	if (!command.compare("rename"))
 	{
 		sentence->erase(sentence->begin());
-		list<string>::iterator it = sentence->begin();
-		error = CommandValidations::validateRenameCommand(sentence);
-		if (error != 0) return error;
-		string currentName = *it;
-		return renameFile(currentName, *(++it));
+		//list<string>::iterator it = sentence->begin();
+		//error = CommandValidations::validateRenameCommand(sentence);
+		//if (error != 0) return error;
+		//string currentName = *it;
+		//return renameFile(currentName, *(++it));
+		return renameFile(sentence);
 	}
 
 	if (!command.compare("import"))

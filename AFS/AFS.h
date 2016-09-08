@@ -96,7 +96,7 @@ public:
 	int closeDisk();
 	int importFile(std::list<std::string>* path);
 	int exportFile(std::list<std::string>* path);
-	int renameFile(std::string currentName, std::string newName);
+	int renameFile(std::list<std::string>* path);
 	int deleteFile(std::list<std::string>* path);
 	std::list<unsigned int>* getFileSystemInfo() const;
 	std::list<FileInfo>* listFiles() const;

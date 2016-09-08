@@ -215,11 +215,27 @@ int AFS::exportFile(list<string>* path)
 	return SUCCESS;
 }
 
-int AFS::renameFile(std::string currentName, std::string newName)
+int AFS::renameFile(list<string>* path)
 {
 	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
 
+	string currentName;
+	string newName;
+	list<string>* currentNameList = new list<string>();
+	list<string>* newNameList = new list<string>();
+	list<string>::iterator it;
 	bool found = false;
+
+	for (it = path->begin(); it != path->end(); ++it)
+	{
+		if (*it == ";") break;
+	}
+
+	if (it == path->end()) return 201;
+	currentNameList->splice(currentNameList->begin(), *path, path->begin(), it++);
+	newNameList->splice(newNameList->begin(), *path, it, path->end());
+	currentName = Parser::constructPath(currentNameList);
+	newName = Parser::constructPath(newNameList);	
 
 	for (int i = 0; i < super.totalInodes; i++)
 	{
@@ -235,6 +251,11 @@ int AFS::renameFile(std::string currentName, std::string newName)
 
 	disk.seekp(super.directoryBlock * super.blockSize);
 	disk.write(reinterpret_cast<char*>(directory), super.directorySize);
+
+	currentNameList->clear();
+	newNameList->clear();
+	delete currentNameList;
+	delete newNameList;
 
 	return SUCCESS;
 }
