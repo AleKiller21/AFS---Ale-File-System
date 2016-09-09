@@ -63,7 +63,7 @@ int AFS::writeFileSystemStructuresToDisk(string diskName)
 	return SUCCESS;
 }
 
-void AFS::saveBytesIntoDataBlocks(char* buffer, int* fileBlocks, int inumber)
+void AFS::saveBytesIntoDataBlocks(char* buffer, unsigned int* fileBlocks, int inumber)
 {
 	for (int i = 0; i < inodes[inumber].dataBlocks; i++)
 	{
@@ -125,7 +125,7 @@ void AFS::freeBlocksOnBitmap(std::list<unsigned>* blocks) const
 
 std::list<unsigned int>* AFS::getFileBlocks(int inode)
 {
-	list<unsigned int>* pointers = new list<unsigned>();
+	list<unsigned int>* pointers = new list<unsigned int>();
 	unsigned int pointer = inodes[inode].blockPointer;
 
 	for (int i = 0; i < inodes[inode].dataBlocks; i++)
@@ -200,7 +200,7 @@ int AFS::exportFile(list<string>* path)
 	if (entry == -1) return FILE_NOT_FOUND;
 	int inode = directory[entry].inode;
 
-	int size = inodes[inode].dataBlocks * super.bytesAvailablePerBlock;
+	unsigned int size = inodes[inode].dataBlocks * super.bytesAvailablePerBlock;
 	char* buffer = new char[size];
 	char* masterBuffer = new char[inodes[inode].size];
 	getFileData(inode, buffer);
@@ -518,7 +518,7 @@ int AFS::createNewFile(unsigned int size, std::string name, char* buffer)
 	if (!checkIfEnoughFreeBlocks(size)) return NOT_ENOUGH_BLOCKS;
 	if (checkFileExist(name)) return FILE_ALREADY_EXISTS;
 
-	int* fileBlocks = getBlocksForFile(size);
+	unsigned int* fileBlocks = getBlocksForFile(size);
 	int inode = assignInodeToFile(size, fileBlocks);
 	if (inode == -1)
 	{
@@ -542,10 +542,10 @@ int AFS::checkIfEnoughFreeBlocks(unsigned int fileSize) const
 	return sizeInBlocks < super.freeBlocks;
 }
 
-int* AFS::getBlocksForFile(unsigned int size)
+unsigned int* AFS::getBlocksForFile(unsigned int size)
 {
-	int sizeInBlocks = convertFileSizeToBlocks(size);
-	int* blocks = new int[sizeInBlocks];
+	unsigned int sizeInBlocks = convertFileSizeToBlocks(size);
+	unsigned int* blocks = new unsigned int[sizeInBlocks];
 	int iterator = 0;
 	int wordsOccupied = 0;
 	unsigned int bitResult;
@@ -572,14 +572,14 @@ int* AFS::getBlocksForFile(unsigned int size)
 	return blocks;
 }
 
-int AFS::calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord)
+unsigned int AFS::calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord)
 {
-	int bitsPerWord = sizeof(int) * 8;
+	unsigned int bitsPerWord = sizeof(int) * 8;
 
 	return bitsPerWord * wordsOccupied + blockPositionInWord;
 }
 
-int AFS::assignInodeToFile(unsigned int fileSize, int* dataBlocks) const
+int AFS::assignInodeToFile(unsigned int fileSize, unsigned int* dataBlocks) const
 {
 	time_t raw;
 	int sixHoursSeconds = 21600;

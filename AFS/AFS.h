@@ -31,7 +31,7 @@ struct Inode
 {
 	bool available;
 	unsigned int size;
-	int dataBlocks;
+	unsigned int dataBlocks;
 	char DateCreated[32];
 	//DateLastModified
 	unsigned int blockPointer;
@@ -70,14 +70,14 @@ class AFS
 	int calculateInitialDataBlock() const;
 	int createNewFile(unsigned int size, std::string name, char* buffer);
 	int checkIfEnoughFreeBlocks(unsigned int fileSize) const;
-	int* getBlocksForFile(unsigned int size);
-	int calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord);
-	int assignInodeToFile(unsigned int fileSize, int* dataBlocks) const;
+	unsigned int* getBlocksForFile(unsigned int size);
+	unsigned int calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord);
+	int assignInodeToFile(unsigned int fileSize, unsigned int* dataBlocks) const;
 	void saveFileInDirectoryEntry(const char* name, int inode) const;
 	void restoreBitmap();
 	bool isFileSystemMounted() const;
 	bool checkFileExist(std::string name) const;
-	void saveBytesIntoDataBlocks(char* buffer, int* fileBlocks, int inumber);
+	void saveBytesIntoDataBlocks(char* buffer, unsigned int* fileBlocks, int inumber);
 	void setUpBuffer(char* buffer, unsigned int sizeOfBuffer);
 	unsigned int convertFileSizeToBlocks(unsigned int size) const;
 	int searchFileInDirectory(std::string fileName) const;
