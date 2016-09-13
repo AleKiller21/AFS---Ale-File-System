@@ -10,6 +10,7 @@
 #define INVALID_FILE_NAME 104
 #define FILE_NEW_NAME_INVALID 105
 #define INVALID_FILE_PATH 106
+#define INVALID_DISK_NAME 107
 
 
 CommandValidations::CommandValidations()
@@ -80,6 +81,16 @@ int CommandValidations::validateRenameCommand(list<string>* arguments)
 	if (!(*it).compare("") || !(*it).compare(" ")) return INVALID_FILE_NAME;
 	++it;
 	if (!(*it).compare("") || !(*it).compare(" ")) return FILE_NEW_NAME_INVALID;
+
+	return SUCCESS;
+}
+
+int CommandValidations::validateDeleteBlockCommand(list<string>* arguments)
+{
+	list<string>::iterator it = arguments->begin();
+
+	if (arguments->size() != 1) return WRONG_NUMBER_ARGUMENTS;
+	if (!(*it).compare("") || !(*it).compare(" ")) return INVALID_DISK_NAME;
 
 	return SUCCESS;
 }

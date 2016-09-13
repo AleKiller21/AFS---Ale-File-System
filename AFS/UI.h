@@ -22,6 +22,7 @@ public:
 	int deleteFile(std::list<std::string>* path);
 	int createEmptyFile(std::list<std::string>* sentence);
 	int renameFile(std::list<std::string>* path);
+	int deleteDisk(std::string diskName);
 	std::list<FileInfo>* listFiles() const;
 	std::list<unsigned int>* getFileSystemInfo() const;
 

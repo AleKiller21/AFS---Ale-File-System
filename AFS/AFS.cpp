@@ -17,6 +17,7 @@
 #define DISK_NOT_EXIST 9
 #define DISK_ALREADY_FORMATTED 12
 #define FILE_NOT_FOUND 13
+#define DISK_NOT_FOUND 14
 
 using namespace std;
 
@@ -281,6 +282,14 @@ int AFS::deleteFile(list<string>* path)
 	pointers->clear();
 	delete pointers;
 	return SUCCESS;
+}
+
+int AFS::deleteDisk(std::string diskName)
+{
+	if (disk.is_open()) return DISK_ALREADY_OPEN;
+	if (!remove(diskName.c_str())) return SUCCESS;
+	
+	return DISK_NOT_FOUND;
 }
 
 list<unsigned int>* AFS::getFileSystemInfo() const

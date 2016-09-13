@@ -23,6 +23,7 @@ class CommandLineInterface
 	int importFile(list<string>* path);
 	int exportFile(list<string>* path);
 	int deleteFile(list<string>* path);
+	int deleteDisk(list<string>* arguments);
 	int evaluateCommands(list<string>* sentence);
 	int help();
 	int close();

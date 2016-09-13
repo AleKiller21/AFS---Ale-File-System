@@ -16,6 +16,7 @@ using namespace std;
 #define DISK_ALREADY_EXISTS 10
 #define DISK_ALREADY_FORMATTED 12
 #define FILE_NOT_FOUND 13
+#define DISK_NOT_FOUND 14
 #define WRONG_NUMBER_ARGUMENTS 100
 #define DISK_NAME_MISSING 101
 #define INVALID_SIZE_ARGUMENT 102
@@ -72,6 +73,9 @@ string ErrorHandler::handleError(int errorCode)
 
 	case FILE_NOT_FOUND:
 		return "No file with such name exists!";
+
+	case DISK_NOT_FOUND:
+		return "No disk/partition with such name exists!";
 
 	case WRONG_NUMBER_ARGUMENTS:
 		return "The number of arguments in the command is wrong!";

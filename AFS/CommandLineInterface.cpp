@@ -16,6 +16,7 @@ CommandLineInterface::CommandLineInterface()
 	commands.push_back("mount -- Loads afs structures to memory.");
 	commands.push_back("unmount -- Removes afs structures from memory. You won't be able to do anything until you mount them back.");
 	commands.push_back("ls -- Lists all the existing files and their corresponding info.");
+	commands.push_back("delete_block -- Deletes an existing disk (partition).");
 	commands.push_back("help -- Shows all the commands available, the arguments they require, and a brief description of each of them.");
 }
 
@@ -154,6 +155,11 @@ int CommandLineInterface::deleteFile(list<string>* path)
 	return 0;
 }
 
+int CommandLineInterface::deleteDisk(list<string>* arguments)
+{
+	return ui.deleteDisk(*(arguments->begin()));
+}
+
 int CommandLineInterface::help()
 {
 	for (list<string>::iterator it = commands.begin(); it != commands.end(); ++it)
@@ -259,11 +265,6 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 	if (!command.compare("rename"))
 	{
 		sentence->erase(sentence->begin());
-		//list<string>::iterator it = sentence->begin();
-		//error = CommandValidations::validateRenameCommand(sentence);
-		//if (error != 0) return error;
-		//string currentName = *it;
-		//return renameFile(currentName, *(++it));
 		return renameFile(sentence);
 	}
 
@@ -283,6 +284,14 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 	{
 		sentence->erase(sentence->begin());
 		return deleteFile(sentence);
+	}
+
+	if (!command.compare("delete_block"))
+	{
+		sentence->erase(sentence->begin());
+		error = CommandValidations::validateDeleteBlockCommand(sentence);
+		if (error != 0) return error;
+		return deleteDisk(sentence);
 	}
 
 	return 200;

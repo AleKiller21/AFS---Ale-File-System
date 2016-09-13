@@ -98,6 +98,7 @@ public:
 	int exportFile(std::list<std::string>* path);
 	int renameFile(std::list<std::string>* path);
 	int deleteFile(std::list<std::string>* path);
+	int deleteDisk(std::string diskName);
 	std::list<unsigned int>* getFileSystemInfo() const;
 	std::list<FileInfo>* listFiles() const;
 

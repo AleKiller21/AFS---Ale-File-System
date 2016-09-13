@@ -71,6 +71,11 @@ int UI::renameFile(list<string>* path)
 	return fileSystem.renameFile(path);
 }
 
+int UI::deleteDisk(std::string diskName)
+{
+	return fileSystem.deleteDisk(diskName);
+}
+
 bool UI::checkDiskExists(std::string diskName)
 {
 	ifstream disk(diskName.c_str());
