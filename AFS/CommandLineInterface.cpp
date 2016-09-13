@@ -7,15 +7,16 @@
 
 CommandLineInterface::CommandLineInterface()
 {
-	commands.push_back("crtdsk <DISK_NAME> <SIZE> <MB/GB> -- Creates a new disk with a primary partition that will have afs mounted.");
-	commands.push_back("rename <FILE_NAME> <DELIMITER> <NEW_NAME> -- Renames the specified file with the new name in the second argument.");
+	commands.push_back("create_block <DISK_NAME> <SIZE> <MB/GB> -- Creates a new disk with a primary partition that will have afs mounted.");
+	commands.push_back("rename <FILE_NAME> <DELIMITER ';'> <NEW_NAME> -- Renames the specified file with the new name in the second argument.");
 	commands.push_back("open <DISK_NAME> -- open the disk with the specified name.");
-	commands.push_back("touch <FILE_NAME> -- Creates an empty file with the specified name.");
-	commands.push_back("import <FILE_PATH> -- Will import the file, specified in the path, into AFS.");
-	commands.push_back("export <FILE_NAME> -- Exports the specified file.");
+	commands.push_back("empty <FILE_NAME> -- Creates an empty file with the specified name.");
+	commands.push_back("copy_from_fs <FILE_PATH> -- Will import the file, specified in the path, into AFS.");
+	commands.push_back("copy_to_fs <FILE_NAME> -- Exports the specified file.");
 	commands.push_back("mount -- Loads afs structures to memory.");
 	commands.push_back("unmount -- Removes afs structures from memory. You won't be able to do anything until you mount them back.");
 	commands.push_back("ls -- Lists all the existing files and their corresponding info.");
+	commands.push_back("delete -- Deletes an existing file in AFS.");
 	commands.push_back("delete_block -- Deletes an existing disk (partition).");
 	commands.push_back("help -- Shows all the commands available, the arguments they require, and a brief description of each of them.");
 }
@@ -183,7 +184,7 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 	if (!command.compare("exit"))
 		return 0;
 
-	if (!command.compare("crtdsk"))
+	if (!command.compare("create_block"))
 	{
 		sentence->erase(sentence->begin());
 		error = CommandValidations::validateCreateDiskCommand(sentence);
@@ -207,7 +208,7 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 		return mountFileSystem();
 	}
 
-	if (!command.compare("touch"))
+	if (!command.compare("empty"))
 	{
 		sentence->erase(sentence->begin());
 		return createEmptyFile(sentence);
@@ -268,13 +269,13 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 		return renameFile(sentence);
 	}
 
-	if (!command.compare("import"))
+	if (!command.compare("copy_from_fs"))
 	{
 		sentence->erase(sentence->begin());
 		return importFile(sentence);
 	}
 
-	if (!command.compare("export"))
+	if (!command.compare("copy_to_fs"))
 	{
 		sentence->erase(sentence->begin());
 		return exportFile(sentence);
