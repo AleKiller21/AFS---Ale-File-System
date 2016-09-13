@@ -210,6 +210,7 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 
 	if (!command.compare("empty"))
 	{
+		if (sentence->size() == 1) return 201;
 		sentence->erase(sentence->begin());
 		return createEmptyFile(sentence);
 	}

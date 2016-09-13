@@ -124,6 +124,22 @@ void AFS::freeBlocksOnBitmap(std::list<unsigned>* blocks) const
 	}
 }
 
+int AFS::extractFileNamesFromPath(std::list<std::string>* path, std::list<std::string>* originNameList, std::list<std::string>* destinyNameList)
+{
+	list<string>::iterator it;
+
+	for (it = path->begin(); it != path->end(); ++it)
+	{
+		if (*it == ";") break;
+	}
+
+	if (it == path->end()) return 201;
+	originNameList->splice(originNameList->begin(), *path, path->begin(), it++);
+	destinyNameList->splice(destinyNameList->begin(), *path, it, path->end());
+
+	return SUCCESS;
+}
+
 std::list<unsigned int>* AFS::getFileBlocks(int inode)
 {
 	list<unsigned int>* pointers = new list<unsigned int>();
@@ -142,6 +158,7 @@ std::list<unsigned int>* AFS::getFileBlocks(int inode)
 
 int AFS::createEmptyFile(list<string>* path)
 {
+	if (path->begin() != path->end() && *(path->begin()) == "") return 201;
 	string name = Parser::constructPath(path);
 	return createNewFile(1, name, nullptr);
 }
@@ -196,8 +213,20 @@ int AFS::exportFile(list<string>* path)
 {
 	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
 
-	string fileName = Parser::constructPath(path);
-	int entry = searchFileInDirectory(fileName);
+	string sourceFileName = "";
+	string targetFilePath = "";
+	list<string>* sourceNameList = new list<string>();
+	list<string>* targetPathList = new list<string>();
+
+	if (extractFileNamesFromPath(path, sourceNameList, targetPathList)) return 201;
+	sourceFileName = Parser::constructPath(sourceNameList);
+	targetFilePath = Parser::constructPath(targetPathList);
+
+	list<string>::iterator it = targetPathList->begin();
+	if (it != targetPathList->end() && *it == "") return 201;
+	if (!targetFilePath.compare("")) targetFilePath = sourceFileName;
+
+	int entry = searchFileInDirectory(sourceFileName);
 	if (entry == -1) return FILE_NOT_FOUND;
 	int inode = directory[entry].inode;
 
@@ -206,7 +235,7 @@ int AFS::exportFile(list<string>* path)
 	char* masterBuffer = new char[inodes[inode].size];
 	getFileData(inode, buffer);
 	memcpy(masterBuffer, buffer, inodes[inode].size);
-	ofstream out(fileName.c_str(), ios::binary);
+	ofstream out(targetFilePath.c_str(), ios::binary);
 	out.write(masterBuffer, inodes[inode].size);
 	
 	out.close();
@@ -224,17 +253,9 @@ int AFS::renameFile(list<string>* path)
 	string newName;
 	list<string>* currentNameList = new list<string>();
 	list<string>* newNameList = new list<string>();
-	list<string>::iterator it;
 	bool found = false;
 
-	for (it = path->begin(); it != path->end(); ++it)
-	{
-		if (*it == ";") break;
-	}
-
-	if (it == path->end()) return 201;
-	currentNameList->splice(currentNameList->begin(), *path, path->begin(), it++);
-	newNameList->splice(newNameList->begin(), *path, it, path->end());
+	if (extractFileNamesFromPath(path, currentNameList, newNameList)) return 201;
 	currentName = Parser::constructPath(currentNameList);
 	newName = Parser::constructPath(newNameList);	
 

@@ -83,6 +83,7 @@ class AFS
 	int searchFileInDirectory(std::string fileName) const;
 	void getFileData(int inode, char* buffer);
 	void freeBlocksOnBitmap(std::list<unsigned int>* blocks) const;
+	int extractFileNamesFromPath(std::list<std::string>* path, std::list<std::string>* originNameList, std::list<std::string>* destinyNameList);
 	std::list<unsigned int>* getFileBlocks(int inode);
 
 public:
