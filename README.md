@@ -36,4 +36,4 @@
 5. Cerrar el disco (esto implícitamente ejecutara el comando **unmount**, el cual se puede tambien llamar manualmente).
 6. Cerrar la aplicación.
 
-La versión más reciente del programa se encuentra en el branch de **develop**. Pronto se pasara a master que contiene la versión estable.
+La versión más reciente del programa se encuentra en el branch de **develop**. Pronto se pasara a **master** que contiene la versión estable.
