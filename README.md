@@ -18,6 +18,7 @@
 * open <DISK_NAME> -- Abre el archivo especificado.
 * empty <FILE_NAME> -- Crea un archivo vació.
 * copy_from_fs <FILE_PATH> <DELIMITER ':'> <TARGET_NAME> --Importara un archivo del sistema de archivos del sistema operativo al sistema de archivos AFS con el nombre especificado. Si el TARGET_NAME esta vacio entonces se importara con el nombre original.
+* copy_to_fs <AFS_FILE_NAME> <DELIMITER ';'> <DESTINATION_PATH> -- Exportara el archivo en AFS a la direccion especififcada del FS en el Sistema Operativo.
 * mount -- Carga las estructuras del sistema de archivos AFS a memoria.
 * unmount -- Elimina las estructuras del sistema de archivos AFS de memoria. No se podrá interactuar con ningún archivo hasta que se vuelva a montar.
 * ls -- Lista todos los archivos existentes con su respectiva información.
