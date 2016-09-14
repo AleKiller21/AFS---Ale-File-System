@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "UI.h"
 
+#define PAGE_SIZE 536870912
+
 using namespace std;
 
 UI::UI()
@@ -10,16 +12,38 @@ UI::UI()
 int UI::createDisk(unsigned int size, string diskName)
 {
 	if (checkDiskExists(diskName)) return 10;
-
-	char* buffer;
 	ofstream out(diskName.c_str(), ios::binary);
 
-	buffer = setPartition(size);
-	out.write(buffer, size);
-	out.close();
+	int iterations = size / PAGE_SIZE;
 
-	delete[] buffer;
-	buffer = nullptr;
+	for (int i = 0; i < iterations; i++)
+	{
+		char* buffer = new char[PAGE_SIZE];
+		for (unsigned int x = 0; x < PAGE_SIZE; x++)
+		{
+			buffer[x] = '\0';
+		}
+
+		out.write(buffer, PAGE_SIZE);
+		size -= PAGE_SIZE;
+		delete[] buffer;
+		buffer = nullptr;
+	}
+
+	if (size > 0)
+	{
+		char* buffer = new char[size];
+		for (unsigned int i = 0; i < size; i++)
+		{
+			buffer[i] = '\0';
+		}
+
+		out.write(buffer, size);
+		delete[] buffer;
+		buffer = nullptr;
+	}
+
+	out.close();
 
 	return fileSystem.writeFileSystemStructuresToDisk(diskName);
 }
@@ -97,17 +121,6 @@ std::list<FileInfo>* UI::listFiles() const
 std::list<unsigned>* UI::getFileSystemInfo() const
 {
 	return fileSystem.getFileSystemInfo();
-}
-
-char* UI::setPartition(unsigned int size) const
-{
-	char* buffer = new char[size];
-	for (unsigned int i = 0; i < size; i++)
-	{
-		buffer[i] = '\0';
-	}
-
-	return buffer;
 }
 
 UI::~UI()

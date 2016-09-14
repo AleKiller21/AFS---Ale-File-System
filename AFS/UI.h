@@ -3,10 +3,8 @@
 
 class UI
 {
-private:
 	AFS fileSystem;
 
-	char* setPartition(unsigned int size) const;
 	bool checkDiskExists(std::string diskName);
 
 public:

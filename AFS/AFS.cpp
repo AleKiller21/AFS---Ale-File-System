@@ -199,7 +199,6 @@ int AFS::importFile(list<string>* path)
 	if (it != targetNameList->end() && *it == "") return 201;
 	if (!targetFileName.compare("")) targetFileName = sourceFilePath;
 
-	//string filePath = Parser::constructPath(path);
 	ifstream file(sourceFilePath.c_str(), ios::binary | ios::ate);
 	if (!file)
 	{
