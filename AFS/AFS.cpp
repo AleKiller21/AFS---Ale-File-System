@@ -186,15 +186,28 @@ int AFS::importFile(list<string>* path)
 {
 	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
 
-	string filePath = Parser::constructPath(path);
-	ifstream file(filePath.c_str(), ios::binary | ios::ate);
+	string sourceFilePath = "";
+	string targetFileName = "";
+	list<string>* sourcePathList = new list<string>();
+	list<string>* targetNameList = new list<string>();
+
+	if (extractFileNamesFromPath(path, sourcePathList, targetNameList)) return 201;
+	sourceFilePath = Parser::constructPath(sourcePathList);
+	targetFileName = Parser::constructPath(targetNameList);
+
+	list<string>::iterator it = targetNameList->begin();
+	if (it != targetNameList->end() && *it == "") return 201;
+	if (!targetFileName.compare("")) targetFileName = sourceFilePath;
+
+	//string filePath = Parser::constructPath(path);
+	ifstream file(sourceFilePath.c_str(), ios::binary | ios::ate);
 	if (!file)
 	{
 		file.close();
 		return FILE_NOT_FOUND;
 	}
 
-	string name = Parser::extractNameFromPath(filePath);
+	string name = Parser::extractNameFromPath(targetFileName);
 	unsigned int size = file.tellg();
 	unsigned int sizeOfBlocks = convertFileSizeToBlocks(size) * super.bytesAvailablePerBlock;
 	char* buffer = new char[sizeOfBlocks];
