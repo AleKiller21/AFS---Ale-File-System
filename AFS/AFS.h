@@ -2,11 +2,11 @@
 
 struct SuperBlock
 {
-	bool state;
 	int totalBlocks;
 	int freeBlocks;
 	int usedBlocks;
 	int blockSize;
+	int bytesAvailablePerBlock;
 	int bitmapSize;
 	int directorySize;
 	int wordsInBitmap;
@@ -31,7 +31,7 @@ struct Inode
 {
 	bool available;
 	unsigned int size;
-	int dataBlocks;
+	unsigned int dataBlocks;
 	char DateCreated[32];
 	//DateLastModified
 	unsigned int blockPointer;
@@ -68,16 +68,23 @@ class AFS
 	int calculateInodeTableInitialBlock() const;
 	int calculateDirectoryInitialBlock() const;
 	int calculateInitialDataBlock() const;
-	int createNewFile(unsigned int size, std::string name);
+	int createNewFile(unsigned int size, std::string name, char* buffer);
 	int checkIfEnoughFreeBlocks(unsigned int fileSize) const;
-	int* getBlocksForFile(unsigned int size);
-	int calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord);
-	int assignInodeToFile(unsigned int fileSize, int* dataBlocks) const;
+	unsigned int* getBlocksForFile(unsigned int size);
+	unsigned int calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord);
+	int assignInodeToFile(unsigned int fileSize, unsigned int* dataBlocks) const;
 	void saveFileInDirectoryEntry(const char* name, int inode) const;
 	void restoreBitmap();
 	bool isFileSystemMounted() const;
 	bool checkFileExist(std::string name) const;
-	bool checkFileSystemState(std::string name);
+	void saveBytesIntoDataBlocks(char* buffer, unsigned int* fileBlocks, int inumber);
+	void setUpBuffer(char* buffer, unsigned int sizeOfBuffer);
+	unsigned int convertFileSizeToBlocks(unsigned int size) const;
+	int searchFileInDirectory(std::string fileName) const;
+	void getFileData(int inode, char* buffer);
+	void freeBlocksOnBitmap(std::list<unsigned int>* blocks) const;
+	int extractFileNamesFromPath(std::list<std::string>* path, std::list<std::string>* originNameList, std::list<std::string>* destinyNameList);
+	std::list<unsigned int>* getFileBlocks(int inode);
 
 public:
 
@@ -85,10 +92,14 @@ public:
 	int writeFileSystemStructuresToDisk(std::string diskName);
 	int mountFileSystem();
 	int unmountFileSystem();
-	int createEmptyFile(std::string name);
+	int createEmptyFile(std::list<std::string>* path);
 	int openDisk(std::string name);
 	int closeDisk();
-	int importFile(std::string filePath, std::string name);
+	int importFile(std::list<std::string>* path);
+	int exportFile(std::list<std::string>* path);
+	int renameFile(std::list<std::string>* path);
+	int deleteFile(std::list<std::string>* path);
+	int deleteDisk(std::string diskName);
 	std::list<unsigned int>* getFileSystemInfo() const;
 	std::list<FileInfo>* listFiles() const;
 

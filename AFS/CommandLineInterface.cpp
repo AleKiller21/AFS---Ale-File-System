@@ -1,16 +1,23 @@
 #include "stdafx.h"
+#include "Parser.h"
+#include "ErrorHandler.h"
+#include <stdlib.h>
 #include "CommandLineInterface.h"
 
 
 CommandLineInterface::CommandLineInterface()
 {
-	commands.push_back("crtdsk <DISK_NAME> <SIZE> <MB/GB> -- Creates a new disk with a primary partition that will have afs mounted.");
+	commands.push_back("create_block <DISK_NAME> <SIZE> <MB/GB> -- Creates a new disk with a primary partition that will have afs mounted.");
+	commands.push_back("rename <FILE_NAME> <DELIMITER ';'> <NEW_NAME> -- Renames the specified file with the new name in the second argument.");
 	commands.push_back("open <DISK_NAME> -- open the disk with the specified name.");
-	commands.push_back("touch <FILE_NAME> -- Creates an empty file with the specified name.");
-	commands.push_back("format <DISK_NAME> -- Applies a logic format to the specified disk. This action is required in order to open it.");
+	commands.push_back("empty <FILE_NAME> -- Creates an empty file with the specified name.");
+	commands.push_back("copy_from_fs <FILE_PATH> -- Will import the file, specified in the path, into AFS.");
+	commands.push_back("copy_to_fs <FILE_NAME> -- Exports the specified file.");
 	commands.push_back("mount -- Loads afs structures to memory.");
 	commands.push_back("unmount -- Removes afs structures from memory. You won't be able to do anything until you mount them back.");
 	commands.push_back("ls -- Lists all the existing files and their corresponding info.");
+	commands.push_back("delete -- Deletes an existing file in AFS.");
+	commands.push_back("delete_block -- Deletes an existing disk (partition).");
 	commands.push_back("help -- Shows all the commands available, the arguments they require, and a brief description of each of them.");
 }
 
@@ -25,11 +32,6 @@ int CommandLineInterface::createDisk(list<string>* arguments)
 	else if (!unit.compare("GB")) size *= 1024 * 1024 * 1024;
 
 	return ui.createDisk(size, diskName);
-}
-
-int CommandLineInterface::formatDisk(string diskName)
-{
-	return ui.formatDisk(diskName);
 }
 
 void CommandLineInterface::loopMenu()
@@ -66,12 +68,12 @@ int CommandLineInterface::openDisk(string diskName)
 	return ui.openDisk(diskName);
 }
 
-int CommandLineInterface::createEmptyFile(string fileName)
+int CommandLineInterface::createEmptyFile(list<string>* sentence)
 {
-	return ui.createEmptyFile(fileName);
+	return ui.createEmptyFile(sentence);
 }
 
-int CommandLineInterface::listFiles()
+int CommandLineInterface::listFiles() const
 {
 	list<FileInfo>* files =  ui.listFiles();
 	if (!files) return 7;
@@ -93,7 +95,7 @@ int CommandLineInterface::listFiles()
 	return 0;
 }
 
-int CommandLineInterface::showFileSystemInfo()
+int CommandLineInterface::showFileSystemInfo() const
 {
 	list<unsigned int>* info = ui.getFileSystemInfo();
 	if (!info) return 7;
@@ -101,26 +103,62 @@ int CommandLineInterface::showFileSystemInfo()
 	cout << "\n";
 
 	list<unsigned int>::iterator it = info->begin();
-	cout << "State : " << *it << endl;
-	cout << "Partition Size : " << *(++it) << endl;
+	cout << "Partition Size : " << *it << " bytes" << endl;
 	cout << "Total blocks : " << *(++it) << endl;
 	cout << "Free blocks : " << *(++it) << endl;
 	cout << "Used blocks : " << *(++it) << endl;
-	cout << "Block size : " << *(++it) << endl;
-	cout << "Bitmap size : " << *(++it) << endl;
+	cout << "Block size : " << *(++it) << " bytes" << endl;
+	cout << "Data bytes available per block : " << *(++it) << " bytes" << endl;
+	cout << "Bitmap size : " << *(++it) << " bytes" << endl;
 	cout << "Bitmap block : " << *(++it) << endl;
 	cout << "Words in bitmap : " << *(++it) << endl;
-	cout << "Directory size : " << *(++it) << endl;
+	cout << "Directory size : " << *(++it) << " bytes" << endl;
 	cout << "Directory block : " << *(++it) << endl;
 	cout << "Total inodes : " << *(++it) << endl;
 	cout << "Free inodes : " << *(++it) << endl;
-	cout << "InodeTable size : " << *(++it) << endl;
+	cout << "InodeTable size : " << *(++it) << " bytes" << endl;
 	cout << "InodeTable block : " << *(++it) << endl;
 	cout << "First data block : " << *(++it) << endl;
+	cout << "sizeof Superblock : " << *(++it) << " bytes" << endl;
+	cout << "sizeof DirectoryEntry : " << *(++it) << " bytes" << endl;
+	cout << "sizeof Inode : " << *(++it) << " bytes" << endl;
 
 	info->clear();
 	delete info;
 	return 0;
+}
+
+int CommandLineInterface::renameFile(list<string>* path)
+{
+	return ui.renameFile(path);
+}
+
+int CommandLineInterface::importFile(list<string>* path)
+{
+	return ui.importFile(path);
+}
+
+int CommandLineInterface::exportFile(list<string>* path)
+{
+	return ui.exportFile(path);
+}
+
+int CommandLineInterface::deleteFile(list<string>* path)
+{
+	cout << "Are you sure you want to delete this file? (Y)/N ";
+	//char response;
+	//cin >> response;
+	string response;
+	getline(cin, response);
+	if (response == "Y" || response == "y")
+		return ui.deleteFile(path);
+
+	return 0;
+}
+
+int CommandLineInterface::deleteDisk(list<string>* arguments)
+{
+	return ui.deleteDisk(*(arguments->begin()));
 }
 
 int CommandLineInterface::help()
@@ -146,7 +184,7 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 	if (!command.compare("exit"))
 		return 0;
 
-	if (!command.compare("crtdsk"))
+	if (!command.compare("create_block"))
 	{
 		sentence->erase(sentence->begin());
 		error = CommandValidations::validateCreateDiskCommand(sentence);
@@ -170,12 +208,11 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 		return mountFileSystem();
 	}
 
-	if (!command.compare("touch"))
+	if (!command.compare("empty"))
 	{
+		if (sentence->size() == 1) return 201;
 		sentence->erase(sentence->begin());
-		error = CommandValidations::validateTouchCommand(sentence);
-		if (error != 0) return error;
-		return createEmptyFile(sentence->front());
+		return createEmptyFile(sentence);
 	}
 
 	if (!command.compare("ls"))
@@ -227,12 +264,36 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 		return showFileSystemInfo();
 	}
 
-	if (!command.compare("format"))
+	if (!command.compare("rename"))
 	{
 		sentence->erase(sentence->begin());
-		error = CommandValidations::validateFormatCommand(sentence);
+		return renameFile(sentence);
+	}
+
+	if (!command.compare("copy_from_fs"))
+	{
+		sentence->erase(sentence->begin());
+		return importFile(sentence);
+	}
+
+	if (!command.compare("copy_to_fs"))
+	{
+		sentence->erase(sentence->begin());
+		return exportFile(sentence);
+	}
+
+	if (!command.compare("delete"))
+	{
+		sentence->erase(sentence->begin());
+		return deleteFile(sentence);
+	}
+
+	if (!command.compare("delete_block"))
+	{
+		sentence->erase(sentence->begin());
+		error = CommandValidations::validateDeleteBlockCommand(sentence);
 		if (error != 0) return error;
-		return formatDisk(sentence->front());
+		return deleteDisk(sentence);
 	}
 
 	return 200;

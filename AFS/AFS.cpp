@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "AFS.h"
+#include "Parser.h"
 #include <ctime>
 
 #define FIRST_BIT_WORD 2147483648
@@ -14,8 +15,9 @@
 #define FILE_SYSTEM_NOT_MOUNTED 7
 #define FILE_SYSTEM_ALREADY_MOUNTED 8
 #define DISK_NOT_EXIST 9
-#define NO_FILE_SYSTEM 11
 #define DISK_ALREADY_FORMATTED 12
+#define FILE_NOT_FOUND 13
+#define DISK_NOT_FOUND 14
 
 using namespace std;
 
@@ -28,10 +30,6 @@ AFS::AFS()
 
 int AFS::writeFileSystemStructuresToDisk(string diskName)
 {
-	//TODO Allow user to format disk even if this is already formatted. Doing so will rewrite all structures back to disk.
-	if (disk.is_open()) return DISK_ALREADY_OPEN;
-	if (checkFileSystemState(diskName)) return DISK_ALREADY_FORMATTED;
-
 	disk.open(diskName.c_str(), ios::binary | ios::out | ios::in | ios::ate);
 	unsigned int diskSize = disk.tellg();
 
@@ -66,27 +64,108 @@ int AFS::writeFileSystemStructuresToDisk(string diskName)
 	return SUCCESS;
 }
 
-bool AFS::checkFileSystemState(std::string name)
+void AFS::saveBytesIntoDataBlocks(char* buffer, unsigned int* fileBlocks, int inumber)
 {
-	bool state = false;
-	ifstream disk(name.c_str(), ios::binary);
-
-	disk.seekg(0);
-	disk.read(reinterpret_cast<char*>(&state), sizeof(bool));
-	disk.close();
-
-	return state;
+	for (int i = 0; i < inodes[inumber].dataBlocks; i++)
+	{
+		unsigned int pointer = i == inodes[inumber].dataBlocks - 1 ? 0 : fileBlocks[i+1];
+		disk.seekp(fileBlocks[i] * super.blockSize);
+		disk.write(buffer, super.bytesAvailablePerBlock);
+		disk.write(reinterpret_cast<char*>(&pointer), sizeof(int));
+		buffer += super.bytesAvailablePerBlock;
+	}
 }
 
-int AFS::createEmptyFile(std::string name)
+void AFS::setUpBuffer(char* buffer, unsigned int sizeOfBuffer)
 {
-	return createNewFile(1, name);
+	for (int i = 0; i < sizeOfBuffer; i++)
+	{
+		buffer[i] = '\0';
+	}
+}
+
+unsigned int AFS::convertFileSizeToBlocks(unsigned size) const
+{
+	return ceil(static_cast<double>(size) / super.bytesAvailablePerBlock);
+}
+
+int AFS::searchFileInDirectory(std::string fileName) const
+{
+	for (int i = 0; i < super.totalInodes; i++)
+	{
+		if (directory[i].available) continue;
+
+		if (!fileName.compare(directory[i].name)) return i;
+	}
+
+	return -1;
+}
+
+void AFS::getFileData(int inode, char* buffer)
+{
+	unsigned int pointer = inodes[inode].blockPointer;
+
+	for (int i = 0; i < inodes[inode].dataBlocks; i++)
+	{
+		disk.seekg(pointer * super.blockSize);
+		disk.read(buffer, super.bytesAvailablePerBlock);
+		disk.read(reinterpret_cast<char*>(&pointer), sizeof(int));
+		buffer += super.bytesAvailablePerBlock;
+	}
+}
+
+void AFS::freeBlocksOnBitmap(std::list<unsigned>* blocks) const
+{
+	for (list<unsigned int>::iterator it = blocks->begin(); it != blocks->end(); ++it)
+	{
+		int word = *it / (sizeof(int) * 8);
+		int offset = *it - (word * sizeof(int) * 8);
+		bitmap[word] ^= (FIRST_BIT_WORD >> offset);
+	}
+}
+
+int AFS::extractFileNamesFromPath(std::list<std::string>* path, std::list<std::string>* originNameList, std::list<std::string>* destinyNameList)
+{
+	list<string>::iterator it;
+
+	for (it = path->begin(); it != path->end(); ++it)
+	{
+		if (*it == ";") break;
+	}
+
+	if (it == path->end()) return 201;
+	originNameList->splice(originNameList->begin(), *path, path->begin(), it++);
+	destinyNameList->splice(destinyNameList->begin(), *path, it, path->end());
+
+	return SUCCESS;
+}
+
+std::list<unsigned int>* AFS::getFileBlocks(int inode)
+{
+	list<unsigned int>* pointers = new list<unsigned int>();
+	unsigned int pointer = inodes[inode].blockPointer;
+
+	for (int i = 0; i < inodes[inode].dataBlocks; i++)
+	{
+		pointers->push_back(pointer);
+		disk.seekg(pointer * super.blockSize);
+		disk.seekg(super.bytesAvailablePerBlock, ios::cur);
+		disk.read(reinterpret_cast<char*>(&pointer), sizeof(int));
+	}
+
+	return pointers;
+}
+
+int AFS::createEmptyFile(list<string>* path)
+{
+	if (path->begin() != path->end() && *(path->begin()) == "") return 201;
+	string name = Parser::constructPath(path);
+	return createNewFile(1, name, nullptr);
 }
 
 int AFS::openDisk(string name)
 {
 	if (disk.is_open()) return DISK_ALREADY_OPEN;
-	if (!checkFileSystemState(name)) return NO_FILE_SYSTEM;
 
 	disk.open(name.c_str(), ios::binary | ios::out | ios::in);
 
@@ -103,18 +182,147 @@ int AFS::closeDisk()
 	return SUCCESS;
 }
 
-int AFS::importFile(string filePath, string name)
+int AFS::importFile(list<string>* path)
 {
 	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
 
-	ifstream file(filePath.c_str(), ios::binary | ios::ate);
+	string sourceFilePath = "";
+	string targetFileName = "";
+	list<string>* sourcePathList = new list<string>();
+	list<string>* targetNameList = new list<string>();
+
+	if (extractFileNamesFromPath(path, sourcePathList, targetNameList)) return 201;
+	sourceFilePath = Parser::constructPath(sourcePathList);
+	targetFileName = Parser::constructPath(targetNameList);
+
+	list<string>::iterator it = targetNameList->begin();
+	if (it != targetNameList->end() && *it == "") return 201;
+	if (!targetFileName.compare("")) targetFileName = sourceFilePath;
+
+	ifstream file(sourceFilePath.c_str(), ios::binary | ios::ate);
+	if (!file)
+	{
+		file.close();
+		return FILE_NOT_FOUND;
+	}
+
+	string name = Parser::extractNameFromPath(targetFileName);
 	unsigned int size = file.tellg();
-	createNewFile(size, name);
-
+	unsigned int sizeOfBlocks = convertFileSizeToBlocks(size) * super.bytesAvailablePerBlock;
+	char* buffer = new char[sizeOfBlocks];
+	setUpBuffer(buffer, sizeOfBlocks);
 	file.seekg(0);
-	file.close();
+	file.read(buffer, size);
+	int state = createNewFile(size, name, buffer);
 
-	return 0;
+	file.close();
+	delete[] buffer;
+
+	return state;
+}
+
+int AFS::exportFile(list<string>* path)
+{
+	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
+
+	string sourceFileName = "";
+	string targetFilePath = "";
+	list<string>* sourceNameList = new list<string>();
+	list<string>* targetPathList = new list<string>();
+
+	if (extractFileNamesFromPath(path, sourceNameList, targetPathList)) return 201;
+	sourceFileName = Parser::constructPath(sourceNameList);
+	targetFilePath = Parser::constructPath(targetPathList);
+
+	list<string>::iterator it = targetPathList->begin();
+	if (it != targetPathList->end() && *it == "") return 201;
+	if (!targetFilePath.compare("")) targetFilePath = sourceFileName;
+
+	int entry = searchFileInDirectory(sourceFileName);
+	if (entry == -1) return FILE_NOT_FOUND;
+	int inode = directory[entry].inode;
+
+	unsigned int size = inodes[inode].dataBlocks * super.bytesAvailablePerBlock;
+	char* buffer = new char[size];
+	char* masterBuffer = new char[inodes[inode].size];
+	getFileData(inode, buffer);
+	memcpy(masterBuffer, buffer, inodes[inode].size);
+	ofstream out(targetFilePath.c_str(), ios::binary);
+	out.write(masterBuffer, inodes[inode].size);
+	
+	out.close();
+	delete[] buffer;
+	delete[] masterBuffer;
+
+	return SUCCESS;
+}
+
+int AFS::renameFile(list<string>* path)
+{
+	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
+
+	string currentName;
+	string newName;
+	list<string>* currentNameList = new list<string>();
+	list<string>* newNameList = new list<string>();
+	bool found = false;
+
+	if (extractFileNamesFromPath(path, currentNameList, newNameList)) return 201;
+	currentName = Parser::constructPath(currentNameList);
+	newName = Parser::constructPath(newNameList);	
+
+	for (int i = 0; i < super.totalInodes; i++)
+	{
+		if (directory[i].available) continue;
+		if (currentName.compare(directory[i].name)) continue;
+
+		strcpy_s(directory[i].name, newName.c_str());
+		found = true;
+		break;
+	}
+
+	if (!found) return FILE_NOT_FOUND;
+
+	disk.seekp(super.directoryBlock * super.blockSize);
+	disk.write(reinterpret_cast<char*>(directory), super.directorySize);
+
+	currentNameList->clear();
+	newNameList->clear();
+	delete currentNameList;
+	delete newNameList;
+
+	return SUCCESS;
+}
+
+int AFS::deleteFile(list<string>* path)
+{
+	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
+
+	string fileName = Parser::constructPath(path);
+	int entry = searchFileInDirectory(fileName);
+
+	if (entry == -1) return FILE_NOT_FOUND;
+
+	directory[entry].available = true;
+	inodes[directory[entry].inode].available = true;
+	list<unsigned int>* pointers = getFileBlocks(directory[entry].inode);
+	freeBlocksOnBitmap(pointers);
+	super.freeBlocks += pointers->size();
+	super.usedBlocks -= pointers->size();
+	super.freeInodes++;
+
+	updateStructuresInDisk();
+	pointers->clear();
+	delete pointers;
+	return SUCCESS;
+}
+
+int AFS::deleteDisk(std::string diskName)
+{
+	if (disk.is_open()) return DISK_ALREADY_OPEN;
+	if (!remove(diskName.c_str())) return SUCCESS;
+	
+	return DISK_NOT_FOUND;
 }
 
 list<unsigned int>* AFS::getFileSystemInfo() const
@@ -123,12 +331,12 @@ list<unsigned int>* AFS::getFileSystemInfo() const
 
 	list<unsigned int>* info = new list<unsigned int>();
 
-	info->push_back(super.state);
 	info->push_back(super.partitionSize);
 	info->push_back(super.totalBlocks);
 	info->push_back(super.freeBlocks);
 	info->push_back(super.usedBlocks);
 	info->push_back(super.blockSize);
+	info->push_back(super.bytesAvailablePerBlock);
 	info->push_back(super.bitmapSize);
 	info->push_back(super.bitmapBlock);
 	info->push_back(super.wordsInBitmap);
@@ -139,6 +347,9 @@ list<unsigned int>* AFS::getFileSystemInfo() const
 	info->push_back(super.inodeTableSize);
 	info->push_back(super.inodeTableBlock);
 	info->push_back(super.firstDataBlock);
+	info->push_back(sizeof(SuperBlock));
+	info->push_back(sizeof(DirectoryEntry));
+	info->push_back(sizeof(Inode));
 
 	return info;
 }
@@ -225,8 +436,8 @@ void AFS::loadInodeTable()
 
 void AFS::initializeSuperBlock(unsigned int partitionSize)
 {
-	super.state = true;
 	super.blockSize = 4096;
+	super.bytesAvailablePerBlock = super.blockSize - sizeof(int);
 	super.totalBlocks = partitionSize / super.blockSize;
 	super.partitionSize = partitionSize;
 	super.totalInodes = super.blockSize / sizeof(Inode);
@@ -320,7 +531,7 @@ void AFS::updateStructuresInDisk()
 
 void AFS::updateSuperBlock(unsigned int size)
 {
-	int sizeInBlocks = ceil(static_cast<double>(size) / super.blockSize);
+	int sizeInBlocks = convertFileSizeToBlocks(size);
 	super.freeBlocks -= sizeInBlocks;
 	super.usedBlocks += sizeInBlocks;
 	super.freeInodes--;
@@ -343,13 +554,13 @@ int AFS::calculateInodeTableInitialBlock() const
 	return directoryBlocks + super.directoryBlock;
 }
 
-int AFS::createNewFile(unsigned int size, std::string name)
+int AFS::createNewFile(unsigned int size, std::string name, char* buffer)
 {
 	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
 	if (!checkIfEnoughFreeBlocks(size)) return NOT_ENOUGH_BLOCKS;
 	if (checkFileExist(name)) return FILE_ALREADY_EXISTS;
 
-	int* fileBlocks = getBlocksForFile(size);
+	unsigned int* fileBlocks = getBlocksForFile(size);
 	int inode = assignInodeToFile(size, fileBlocks);
 	if (inode == -1)
 	{
@@ -358,6 +569,8 @@ int AFS::createNewFile(unsigned int size, std::string name)
 	}
 
 	saveFileInDirectoryEntry(name.c_str(), inode);
+	if (buffer) saveBytesIntoDataBlocks(buffer, fileBlocks, inode);
+
 	updateSuperBlock(size);
 	updateStructuresInDisk();
 
@@ -367,14 +580,14 @@ int AFS::createNewFile(unsigned int size, std::string name)
 
 int AFS::checkIfEnoughFreeBlocks(unsigned int fileSize) const
 {
-	int sizeInBlocks = ceil(static_cast<double>(fileSize) / super.blockSize);
+	int sizeInBlocks = convertFileSizeToBlocks(fileSize);
 	return sizeInBlocks < super.freeBlocks;
 }
 
-int* AFS::getBlocksForFile(unsigned int size)
+unsigned int* AFS::getBlocksForFile(unsigned int size)
 {
-	int sizeInBlocks = ceil(static_cast<double>(size) / super.blockSize);
-	int* blocks = new int[sizeInBlocks];
+	unsigned int sizeInBlocks = convertFileSizeToBlocks(size);
+	unsigned int* blocks = new unsigned int[sizeInBlocks];
 	int iterator = 0;
 	int wordsOccupied = 0;
 	unsigned int bitResult;
@@ -401,14 +614,14 @@ int* AFS::getBlocksForFile(unsigned int size)
 	return blocks;
 }
 
-int AFS::calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord)
+unsigned int AFS::calculateBlockNumberInBitmap(int wordsOccupied, int blockPositionInWord)
 {
-	int bitsPerWord = sizeof(int) * 8;
+	unsigned int bitsPerWord = sizeof(int) * 8;
 
 	return bitsPerWord * wordsOccupied + blockPositionInWord;
 }
 
-int AFS::assignInodeToFile(unsigned int fileSize, int* dataBlocks) const
+int AFS::assignInodeToFile(unsigned int fileSize, unsigned int* dataBlocks) const
 {
 	time_t raw;
 	int sixHoursSeconds = 21600;
@@ -419,8 +632,8 @@ int AFS::assignInodeToFile(unsigned int fileSize, int* dataBlocks) const
 
 		inodes[i].available = false;
 		inodes[i].blockPointer = dataBlocks[0];
-		inodes[i].dataBlocks = ceil(static_cast<double>(fileSize) / super.blockSize);
-		inodes[i].size = fileSize;
+		inodes[i].dataBlocks = convertFileSizeToBlocks(fileSize);
+		inodes[i].size = fileSize == 1 ? 0: fileSize;
 		time(&raw);
 		//raw -= sixHoursSeconds;
 		//raw-= 43200;
