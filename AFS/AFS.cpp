@@ -64,16 +64,34 @@ int AFS::writeFileSystemStructuresToDisk(string diskName)
 	return SUCCESS;
 }
 
-void AFS::saveBytesIntoDataBlocks(char* buffer, unsigned int* fileBlocks, int inumber)
+void AFS::saveBytesIntoDataBlocks(unsigned int* fileBlocks, int inumber, string sourceFilePath)
 {
+	unsigned int fileSize = inodes[inumber].size;
+	ifstream file(sourceFilePath.c_str(), ios::binary);
+
 	for (int i = 0; i < inodes[inumber].dataBlocks; i++)
 	{
+		char* buffer = new char[super.bytesAvailablePerBlock];
+		setUpBuffer(buffer, super.bytesAvailablePerBlock);
+		if (fileSize > super.bytesAvailablePerBlock)
+		{
+			file.read(buffer, super.bytesAvailablePerBlock);
+		}
+		else
+		{
+			file.read(buffer, fileSize);
+		}
+
 		unsigned int pointer = i == inodes[inumber].dataBlocks - 1 ? 0 : fileBlocks[i+1];
 		disk.seekp(fileBlocks[i] * super.blockSize);
 		disk.write(buffer, super.bytesAvailablePerBlock);
 		disk.write(reinterpret_cast<char*>(&pointer), sizeof(int));
-		buffer += super.bytesAvailablePerBlock;
+		fileSize -= super.bytesAvailablePerBlock;
+		//buffer += super.bytesAvailablePerBlock;
+		delete[] buffer;
 	}
+
+	file.close();
 }
 
 void AFS::setUpBuffer(char* buffer, unsigned int sizeOfBuffer)
@@ -160,7 +178,7 @@ int AFS::createEmptyFile(list<string>* path)
 {
 	if (path->begin() != path->end() && *(path->begin()) == "") return 201;
 	string name = Parser::constructPath(path);
-	return createNewFile(1, name, nullptr);
+	return createNewFile(1, name, "");
 }
 
 int AFS::openDisk(string name)
@@ -208,15 +226,16 @@ int AFS::importFile(list<string>* path)
 
 	string name = Parser::extractNameFromPath(targetFileName);
 	unsigned int size = file.tellg();
-	unsigned int sizeOfBlocks = convertFileSizeToBlocks(size) * super.bytesAvailablePerBlock;
+	file.close();
+	/*unsigned int sizeOfBlocks = convertFileSizeToBlocks(size) * super.bytesAvailablePerBlock;
 	char* buffer = new char[sizeOfBlocks];
 	setUpBuffer(buffer, sizeOfBlocks);
 	file.seekg(0);
-	file.read(buffer, size);
-	int state = createNewFile(size, name, buffer);
+	file.read(buffer, size);*/
+	int state = createNewFile(size, name, sourceFilePath);
 
-	file.close();
-	delete[] buffer;
+	//file.close();
+	//delete[] buffer;
 
 	return state;
 }
@@ -554,7 +573,7 @@ int AFS::calculateInodeTableInitialBlock() const
 	return directoryBlocks + super.directoryBlock;
 }
 
-int AFS::createNewFile(unsigned int size, std::string name, char* buffer)
+int AFS::createNewFile(unsigned int size, std::string name, string sourceFilePath)
 {
 	if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
 	if (!checkIfEnoughFreeBlocks(size)) return NOT_ENOUGH_BLOCKS;
@@ -569,7 +588,7 @@ int AFS::createNewFile(unsigned int size, std::string name, char* buffer)
 	}
 
 	saveFileInDirectoryEntry(name.c_str(), inode);
-	if (buffer) saveBytesIntoDataBlocks(buffer, fileBlocks, inode);
+	if (sourceFilePath != "") saveBytesIntoDataBlocks(fileBlocks, inode, sourceFilePath);
 
 	updateSuperBlock(size);
 	updateStructuresInDisk();
