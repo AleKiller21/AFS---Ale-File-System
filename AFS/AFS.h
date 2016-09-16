@@ -81,7 +81,7 @@ class AFS
 	void setUpBuffer(char* buffer, unsigned int sizeOfBuffer);
 	unsigned int convertFileSizeToBlocks(unsigned int size) const;
 	int searchFileInDirectory(std::string fileName) const;
-	void getFileData(int inode, char* buffer);
+	void getFileData(int inode, std::string targetFilePath);
 	void freeBlocksOnBitmap(std::list<unsigned int>* blocks) const;
 	int extractFileNamesFromPath(std::list<std::string>* path, std::list<std::string>* originNameList, std::list<std::string>* destinyNameList);
 	std::list<unsigned int>* getFileBlocks(int inode);

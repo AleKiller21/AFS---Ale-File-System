@@ -119,17 +119,41 @@ int AFS::searchFileInDirectory(std::string fileName) const
 	return -1;
 }
 
-void AFS::getFileData(int inode, char* buffer)
+void AFS::getFileData(int inode, string targetFilePath)
 {
 	unsigned int pointer = inodes[inode].blockPointer;
+	unsigned int fileSize = inodes[inode].size;
+	ofstream file(targetFilePath.c_str(), ios::binary);
 
 	for (int i = 0; i < inodes[inode].dataBlocks; i++)
 	{
 		disk.seekg(pointer * super.blockSize);
-		disk.read(buffer, super.bytesAvailablePerBlock);
+		char* buffer;
+
+		if (fileSize > super.bytesAvailablePerBlock)
+		{
+			buffer = new char[super.bytesAvailablePerBlock];
+			disk.read(buffer, super.bytesAvailablePerBlock);
+			file.write(buffer, super.bytesAvailablePerBlock);
+		}
+
+		else
+		{
+			buffer = new char[fileSize];
+			disk.read(buffer, fileSize);
+			file.write(buffer, fileSize);
+		}
+
+
+		//disk.seekg(pointer * super.blockSize);
+		//disk.read(buffer, super.bytesAvailablePerBlock);
 		disk.read(reinterpret_cast<char*>(&pointer), sizeof(int));
-		buffer += super.bytesAvailablePerBlock;
+		fileSize -= super.bytesAvailablePerBlock;
+		delete[] buffer;
+		//buffer += super.bytesAvailablePerBlock;
 	}
+
+	file.close();
 }
 
 void AFS::freeBlocksOnBitmap(std::list<unsigned>* blocks) const
@@ -236,6 +260,10 @@ int AFS::importFile(list<string>* path)
 
 	//file.close();
 	//delete[] buffer;
+	sourcePathList->clear();
+	targetNameList->clear();
+	delete sourcePathList;
+	delete targetNameList;
 
 	return state;
 }
@@ -261,17 +289,22 @@ int AFS::exportFile(list<string>* path)
 	if (entry == -1) return FILE_NOT_FOUND;
 	int inode = directory[entry].inode;
 
-	unsigned int size = inodes[inode].dataBlocks * super.bytesAvailablePerBlock;
-	char* buffer = new char[size];
-	char* masterBuffer = new char[inodes[inode].size];
-	getFileData(inode, buffer);
-	memcpy(masterBuffer, buffer, inodes[inode].size);
-	ofstream out(targetFilePath.c_str(), ios::binary);
-	out.write(masterBuffer, inodes[inode].size);
+	//unsigned int size = inodes[inode].dataBlocks * super.bytesAvailablePerBlock;
+	//char* buffer = new char[size];
+	//char* masterBuffer = new char[inodes[inode].size];
+	//getFileData(inode, buffer);
+	getFileData(inode, targetFilePath);
+	//memcpy(masterBuffer, buffer, inodes[inode].size);
+	//ofstream out(targetFilePath.c_str(), ios::binary);
+	//out.write(masterBuffer, inodes[inode].size);
 	
-	out.close();
-	delete[] buffer;
-	delete[] masterBuffer;
+	//out.close();
+	//delete[] buffer;
+	//delete[] masterBuffer;
+	sourceNameList->clear();
+	targetPathList->clear();
+	delete sourceNameList;
+	delete targetPathList;
 
 	return SUCCESS;
 }
