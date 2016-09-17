@@ -28,6 +28,8 @@ int CommandLineInterface::createDisk(list<string>* arguments)
 	unsigned int size = stoul(*(++it), nullptr);
 	string unit = *(++it);
 
+	if (size >= 4 && !unit.compare("GB")) return 102;
+
 	if (!unit.compare("MB")) size *= 1024 * 1024;
 	else if (!unit.compare("GB")) size *= 1024 * 1024 * 1024;
 

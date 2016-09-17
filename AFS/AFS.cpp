@@ -144,13 +144,9 @@ void AFS::getFileData(int inode, string targetFilePath)
 			file.write(buffer, fileSize);
 		}
 
-
-		//disk.seekg(pointer * super.blockSize);
-		//disk.read(buffer, super.bytesAvailablePerBlock);
 		disk.read(reinterpret_cast<char*>(&pointer), sizeof(int));
 		fileSize -= super.bytesAvailablePerBlock;
 		delete[] buffer;
-		//buffer += super.bytesAvailablePerBlock;
 	}
 
 	file.close();
@@ -251,15 +247,8 @@ int AFS::importFile(list<string>* path)
 	string name = Parser::extractNameFromPath(targetFileName);
 	unsigned int size = file.tellg();
 	file.close();
-	/*unsigned int sizeOfBlocks = convertFileSizeToBlocks(size) * super.bytesAvailablePerBlock;
-	char* buffer = new char[sizeOfBlocks];
-	setUpBuffer(buffer, sizeOfBlocks);
-	file.seekg(0);
-	file.read(buffer, size);*/
 	int state = createNewFile(size, name, sourceFilePath);
 
-	//file.close();
-	//delete[] buffer;
 	sourcePathList->clear();
 	targetNameList->clear();
 	delete sourcePathList;
@@ -289,18 +278,8 @@ int AFS::exportFile(list<string>* path)
 	if (entry == -1) return FILE_NOT_FOUND;
 	int inode = directory[entry].inode;
 
-	//unsigned int size = inodes[inode].dataBlocks * super.bytesAvailablePerBlock;
-	//char* buffer = new char[size];
-	//char* masterBuffer = new char[inodes[inode].size];
-	//getFileData(inode, buffer);
 	getFileData(inode, targetFilePath);
-	//memcpy(masterBuffer, buffer, inodes[inode].size);
-	//ofstream out(targetFilePath.c_str(), ios::binary);
-	//out.write(masterBuffer, inodes[inode].size);
 	
-	//out.close();
-	//delete[] buffer;
-	//delete[] masterBuffer;
 	sourceNameList->clear();
 	targetPathList->clear();
 	delete sourceNameList;
