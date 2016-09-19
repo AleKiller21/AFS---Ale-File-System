@@ -214,8 +214,6 @@ int AFS::openDisk(string name)
 int AFS::closeDisk()
 {
 	if (!disk.is_open()) return DISK_NOT_OPEN;
-
-	//if (isFileSystemMounted()) unmountFileSystem();
 	
 	unmountFileSystem();
 	disk.close();
@@ -411,9 +409,6 @@ list<FileInfo>* AFS::listFiles() const
 
 int AFS::mountFileSystem()
 {
-	//if (!disk.is_open()) return DISK_NOT_OPEN;
-	//if (isFileSystemMounted()) return FILE_SYSTEM_ALREADY_MOUNTED;
-
 	loadSuperBlock();
 	loadBitmap();
 	loadDirectory();
@@ -424,8 +419,6 @@ int AFS::mountFileSystem()
 
 int AFS::unmountFileSystem()
 {
-	//if (!isFileSystemMounted()) return FILE_SYSTEM_NOT_MOUNTED;
-
 	delete[] bitmap;
 	delete[] directory;
 	delete[] inodes;

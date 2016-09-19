@@ -14,8 +14,6 @@ CommandLineInterface::CommandLineInterface()
 	commands.push_back("empty <FILE_NAME> -- Creates an empty file with the specified name.");
 	commands.push_back("copy_from_fs <FILE_PATH> -- Will import the file, specified in the path, into AFS.");
 	commands.push_back("copy_to_fs <FILE_NAME> -- Exports the specified file.");
-	//commands.push_back("mount -- Loads afs structures to memory.");
-	//commands.push_back("unmount -- Removes afs structures from memory. You won't be able to do anything until you mount them back.");
 	commands.push_back("ls -- Lists all the existing files and their corresponding info.");
 	commands.push_back("delete -- Deletes an existing file in AFS.");
 	commands.push_back("delete_block -- Deletes an existing disk (partition).");
@@ -203,14 +201,6 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 		return openDisk(sentence->front());
 	}
 
-	//if (!command.compare("mount"))
-	//{
-	//	sentence->erase(sentence->begin());
-	//	error = CommandValidations::validateCommandsWithoutArguments(sentence);
-	//	if (error != 0) return error;
-	//	return mountFileSystem();
-	//}
-
 	if (!command.compare("empty"))
 	{
 		if (sentence->size() == 1) return 201;
@@ -225,14 +215,6 @@ int CommandLineInterface::evaluateCommands(list<string>* sentence)
 		if (error != 0) return error;
 		return listFiles();
 	}
-
-	//if (!command.compare("unmount"))
-	//{
-	//	sentence->erase(sentence->begin());
-	//	error = CommandValidations::validateCommandsWithoutArguments(sentence);
-	//	if (error != 0) return error;
-	//	return unmountFileSystem();
-	//}
 
 	if (!command.compare("help"))
 	{
